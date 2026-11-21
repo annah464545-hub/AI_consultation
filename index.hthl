@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI専門家相談室</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h1 { font-size: 1.4rem; text-align: center; color: #2c3e50; margin-bottom: 8px; }
+    p.desc { font-size: 0.9rem; color: #666; text-align: center; margin-bottom: 24px; }
+    label { display: block; font-weight: bold; margin: 16px 0 8px; font-size: 0.95rem; }
+    .experts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .expert-btn { padding: 12px; border: 2px solid #e0e6ed; border-radius: 10px; background: #fff; cursor: pointer; text-align: left; transition: 0.2s; }
+    .expert-btn.active { border-color: #3498db; background: #ebf5fb; }
+    .expert-title { font-weight: bold; font-size: 0.95rem; display: block; }
+    .expert-sub { font-size: 0.75rem; color: #666; }
+    select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; font-family: inherit; }
+    textarea { height: 120px; resize: vertical; }
+    .actions { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+    button.primary { background: #10a37f; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+    button.secondary { background: #4285f4; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+    button.copy { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 0.9rem; cursor: pointer; }
+    .toast { text-align: center; color: #10a37f; font-size: 0.85rem; margin-top: 8px; height: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI専門家相談室</h1>
+    <p class="desc">相談したい専門家と内容を選んで、普段のAIに引き継ぎます</p>
+
+    <label>1. 誰に相談しますか？</label>
+    <div class="experts" id="expertList">
+      <div class="expert-btn active" data-role="心理カウンセラー" data-prompt="あなたは経験豊富で温厚な心理カウンセラーです。相談者の感情を否定せず受け止め、心が軽くなるように傾聴と優しい問いかけを行ってください。">
+        <span class="expert-title">🧠 心理カウンセラー</span>
+        <span class="expert-sub">モヤモヤ・人間関係・心の疲れ</span>
+      </div>
+      <div class="expert-btn" data-role="キャリアコーチ" data-prompt="あなたは論理的かつ前向きなキャリアコーチです。相談者の強みや価値観を引き出し、仕事や将来の選択肢を整理して具体的な一歩を提案してください。">
+        <span class="expert-title">💼 キャリアコーチ</span>
+        <span class="expert-sub">仕事・転職・将来・目標設定</span>
+      </div>
+      <div class="expert-btn" data-role="敏腕ビジネス顧問" data-prompt="あなたは実践的な経営・ビジネスコンサルタントです。課題の本質を素早く見抜き、実行可能で効果的なアイデアや解決策を分かりやすく提示してください。">
+        <span class="expert-title">💡 ビジネス・企画顧問</span>
+        <span class="expert-sub">アイデア出し・業務改善・副業</span>
+      </div>
+      <div class="expert-btn" data-role="暮らしと生活のアドバイザー" data-prompt="あなたは生活習慣や家計・時間管理に詳しいライフアドバイザーです。無理なく続けられる現実的で優しい工夫を提案してください。">
+        <span class="expert-title">🌿 生活・習慣アドバイザー</span>
+        <span class="expert-sub">時間管理・片付け・日々の悩み</span>
+      </div>
+    </div>
+
+    <label>2. AIにどんなスタンスで答えてほしいですか？</label>
+    <select id="stance">
+      <option value="まずは共感して、じっくり話を聞いてほしい">まずは共感して、じっくり話を聞いてほしい</option>
+      <option value="客観的なアドバイスや具体的な解決策がほしい">客観的なアドバイスや具体的な解決策がほしい</option>
+      <option value="質問を投げかけてもらい、自分の考えを整理したい">質問を投げかけてもらい、自分の考えを整理したい</option>
+      <option value="優しく背中を押してほしい・励ましてほしい">優しく背中を押してほしい・励ましてほしい</option>
+    </select>
+
+    <label>3. 相談内容（箇条書きでもOK）</label>
+    <textarea id="content" placeholder="例：最近仕事が忙しくて余裕がなく、人間関係でも少し疲れています..."></textarea>
+
+    <div class="actions">
+      <button class="primary" onclick="openChatGPT()">ChatGPTで相談を始める ↗</button>
+      <button class="secondary" onclick="copyAndOpen('https://google.com')">プロンプトをコピーしてGeminiを開く ↗</button>
+      <button class="copy" onclick="copyOnly()">相談用プロンプトだけをコピーする</button>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    let selectedRole = "心理カウンセラー";
+    let selectedPrompt = document.querySelector('.expert-btn.active').dataset.prompt;
+
+    document.querySelectorAll('.expert-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.expert-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedRole = btn.dataset.role;
+        selectedPrompt = btn.dataset.prompt;
+      });
+    });
+
+    function buildPrompt() {
+      const stance = document.getElementById('stance').value;
+      const content = document.getElementById('content').value.trim();
+      if (!content) {
+        alert("相談内容を入力してください。");
+        return null;
+      }
+      return `${selectedPrompt}\n\n【希望する対応スタンス】\n${stance}\n\n【相談内容】\n${content}\n\nまずは上記の相談内容に対して、専門家として最初の一言を返してください。`;
+    }
+
+    function openChatGPT() {
+      const prompt = buildPrompt();
+      if (!prompt) return;
+      const url = `https://chatgpt.com{encodeURIComponent(prompt)}`;
+      window.open(url, '_blank');
+    }
+
+    function copyAndOpen(url) {
+      const prompt = buildPrompt();
+      if (!prompt) return;
+      navigator.clipboard.writeText(prompt).then(() => {
+        showToast("コピーしました！開いた画面で貼り付けてください");
+        setTimeout(() => window.open(url, '_blank'), 600);
+      });
+    }
+
+    function copyOnly() {
+      const prompt = buildPrompt();
+      if (!prompt) return;
+      navigator.clipboard.writeText(prompt).then(() => {
+        showToast("相談用プロンプトをクリップボードにコピーしました！");
+      });
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      setTimeout(() => t.textContent = "", 4000);
+    }
+  </script>
+</body>
+</html>
