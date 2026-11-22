@@ -12,6 +12,33 @@
     <h1>AI専門家相談室</h1>
     <p class="desc">いつものAIに、プロの聞き方で相談を引き継ぎます。無料・登録不要。</p>
 
+    <!-- プライバシー設定（最上部・目立たせる） -->
+    <section class="privacy unset" id="privacyBox" aria-labelledby="privTitle">
+      <h2 id="privTitle">🔒 相談内容の保存について</h2>
+      <p>履歴・下書きは、<b>いま使っているこの端末の、このブラウザの中だけ</b>に保存されます。サーバーには送られません。そのため、<b>別の端末・別のブラウザ・別のURLからは履歴を見られません</b>（引き継げません）。逆に、<b>同じ端末・同じブラウザを使う人には見えてしまいます。</b></p>
+
+      <div id="privChoice">
+        <p class="priv-ask">最初に選んでください。いま使っているのは…</p>
+        <div class="priv-btns">
+          <button type="button" class="act primary" id="btnPrivSave">🏠 自分専用の端末です<br><small>履歴・下書きを保存する</small></button>
+          <button type="button" class="act danger" id="btnPrivNoSave">👥 共用の端末です<br><small>ネットカフェ・家族共用など（保存しない）</small></button>
+        </div>
+        <p class="note">選ぶまでは、何も保存されません。あとからいつでも変更できます。</p>
+      </div>
+
+      <div id="privSwitch" hidden>
+        <label class="switch" for="noSave">
+          <input type="checkbox" id="noSave">
+          <span class="slider" aria-hidden="true"></span>
+          <span class="switch-text">この端末に履歴・下書きを保存しない</span>
+        </label>
+        <div class="priv-status" id="privStatus" aria-live="polite"></div>
+        <button type="button" class="act wipe" id="btnWipe">🗑 いま入力内容と履歴をすべて消す</button>
+      </div>
+
+      <p class="priv-warn">⚠️ <b>ネットカフェ・職場や家族と共用のパソコンなどでは、「保存しない」をオンにするか、使い終わったら必ず「すべて消す」を押してください。</b>消さないと、次に使う人に相談内容が見えてしまいます。また、ChatGPT・Claude・Geminiの側にも会話が残るため、そちらもログアウトや会話の削除をお忘れなく。</p>
+    </section>
+
     <details class="howto">
       <summary>💡 なぜこのサイトを通すと答えが良くなるの？（30秒）</summary>
       <ol>
@@ -80,6 +107,10 @@
       <button type="button" class="act copy" id="btnCopy">プロンプトだけをコピーする（Ctrl/⌘ + Enter）</button>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="after-hint" id="afterHint">
+      🧹 共用のパソコン（ネットカフェ・家族共用など）で使ったときは、<b>終わったら必ず消してください。</b>
+      <button type="button" class="link inline" id="btnWipe2">入力内容と履歴をすべて消す</button>
+    </div>
     <p class="note">どのAIも、無料プランでウェブ検索に対応しています（プランや時期により変わることがあります）。無料プランには回数制限があるため、1回の送信で議論までできるように作っています。</p>
 
     <details id="previewBox">
@@ -99,12 +130,13 @@
 
     <details id="historyBox">
       <summary>過去の相談 <span id="historyCount"></span></summary>
+      <p class="note">📍 履歴は、<b>この端末のこのブラウザの中だけ</b>にあります。別の端末・別のブラウザでは見られず、同じ端末を使う他の人には見えます。共用の端末では、使い終わったら下のボタンで削除してください。</p>
       <div id="historyList"></div>
       <button type="button" class="link" id="btnClearHistory">履歴をすべて削除する</button>
     </details>
 
     <div class="footer">
-      <p>🔒 入力内容・履歴はこのブラウザ内にのみ保存されます。当サイトは内容を収集・送信しません（ボタンを押したときに、選んだAIサービスへ渡されます）。</p>
+      <p>🔒 入力内容・履歴は、この端末のこのブラウザ内にのみ保存されます（保存しない設定も選べます）。当サイトは内容を収集・送信しません。ボタンを押したときだけ、選んだAIサービスへ渡されます。共用の端末では、使い終わったら必ず履歴を消してください。</p>
       <p>⚠️ AIの回答は間違いを含むことがあります。医療・法律・お金などの重要な判断は、出典を確認し、必要に応じて専門機関にご相談ください。</p>
       <p>💬 つらい気持ちが強いときは、一人で抱えず専門の相談窓口へ（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。</p>
     </div>

@@ -6,6 +6,7 @@
   var HIST_MAX = 10;
   var LS_DRAFT = 'aiConsult.draft.v3';
   var LS_HIST = 'aiConsult.history.v3';
+  var LS_PRIV = 'aiConsult.privacy.v1';   // 'save' | 'nosave'（未選択の間は何も保存しない）
 
   var $ = function (id) { return document.getElementById(id); };
   function el(tag, cls, text) {
@@ -23,6 +24,9 @@
   var mode = 'quick';
   var opts = Object.assign({}, A.MODES.quick.defaults);
   var toastTimer = null;
+  var privacy = null;        // 'save' / 'nosave' / null(未選択)
+  var memHistory = [];       // 保存しない間の履歴（ページを閉じると消える）
+  function canSave() { return privacy === 'save'; }
 
   /* ---------- 描画 ---------- */
   function renderExamples() {
@@ -241,7 +245,7 @@
     return { selected: selected.slice(), custom: $('customName').value, mode: mode, opts: Object.assign({}, opts),
       stance: s.stance, length: s.length, content: s.content, ctx: s.ctx };
   }
-  function saveDraft() { lsSet(LS_DRAFT, snapshot()); }
+  function saveDraft() { if (canSave()) { lsSet(LS_DRAFT, snapshot()); } }
 
   function setSelectValue(sel, v) {
     if (typeof v !== 'string') { return; }
@@ -267,7 +271,8 @@
     $('ctxBox').open = hasCtx;
   }
 
-  function getHistory() { var h = lsGet(LS_HIST); return Array.isArray(h) ? h : []; }
+  function getStoredHistory() { var h = lsGet(LS_HIST); return Array.isArray(h) ? h : []; }
+  function getHistory() { return canSave() ? getStoredHistory() : memHistory; }
   function saveHistory() {
     var entry = snapshot();
     entry.t = Date.now();
@@ -277,7 +282,8 @@
     });
     h.unshift(entry);
     h = h.slice(0, HIST_MAX);
-    while (h.length && !lsSet(LS_HIST, h)) { h.pop(); }
+    if (canSave()) { while (h.length && !lsSet(LS_HIST, h)) { h.pop(); } }
+    else { memHistory = h; }
     renderHistory();
   }
   function renderHistory() {
@@ -286,7 +292,9 @@
     $('historyCount').textContent = h.length ? '（' + h.length + '件）' : '';
     $('btnClearHistory').style.display = h.length ? '' : 'none';
     if (!h.length) {
-      list.appendChild(el('p', 'empty', 'まだ履歴はありません。AIを開く／コピーすると、ここに残ります。'));
+      list.appendChild(el('p', 'empty', canSave() ? 'まだ履歴はありません。AIを開く／コピーすると、ここに残ります。'
+        : (privacy === 'nosave' ? '「保存しない」設定です。履歴はこのページを開いている間だけ表示され、閉じると消えます。'
+          : '保存方法が未選択のため、履歴は保存されません。上の「相談内容の保存について」で選んでください。')));
       return;
     }
     h.forEach(function (x) {
@@ -371,13 +379,77 @@
     saveHistory();
   }
 
+  /* ---------- プライバシー設定 ---------- */
+  function renderPrivacy() {
+    var unset = privacy !== 'save' && privacy !== 'nosave';
+    $('privacyBox').className = 'privacy' + (unset ? ' unset' : '');
+    $('privChoice').hidden = !unset;
+    $('privSwitch').hidden = unset;
+    $('noSave').checked = privacy === 'nosave';
+    var st = $('privStatus');
+    if (privacy === 'save') {
+      st.className = 'priv-status on-save';
+      st.textContent = '現在：保存する（この端末のこのブラウザに、履歴・下書きが残ります）';
+    } else if (privacy === 'nosave') {
+      st.className = 'priv-status on-nosave';
+      st.textContent = '現在：保存しない（ページを閉じると、履歴・下書きは消えます）';
+    } else {
+      st.className = 'priv-status';
+      st.textContent = '';
+    }
+    $('afterHint').hidden = privacy === 'nosave';
+  }
+
+  function setPrivacy(v) {
+    if (v === 'nosave') {
+      var stored = getStoredHistory();
+      var hasDraft = !!lsGet(LS_DRAFT);
+      if ((stored.length || hasDraft) &&
+          !confirm('この端末に保存されている履歴（' + stored.length + '件）と下書きを削除します。よろしいですか？')) {
+        renderPrivacy();
+        return;
+      }
+      lsRemove(LS_DRAFT); lsRemove(LS_HIST);
+      privacy = 'nosave'; lsSet(LS_PRIV, 'nosave');
+      toast('「保存しない」にしました。この端末に残っていた履歴と下書きは削除しました。');
+    } else {
+      var carry = memHistory;
+      privacy = 'save'; lsSet(LS_PRIV, 'save');
+      if (!$('content').value.trim()) { applyState(lsGet(LS_DRAFT)); }
+      if (carry.length) { lsSet(LS_HIST, carry.concat(getStoredHistory()).slice(0, HIST_MAX)); }
+      memHistory = [];
+      toast('「保存する」にしました。共用の端末では、使い終わったら必ず履歴を消してください。');
+    }
+    renderPrivacy(); update(); renderHistory();
+  }
+
+  function wipeAll() {
+    if (!confirm('入力中の内容と、この端末に保存された履歴・下書きをすべて消します。よろしいですか？')) { return; }
+    lsRemove(LS_DRAFT); lsRemove(LS_HIST); memHistory = [];
+    $('content').value = ''; $('customName').value = '';
+    A.CTX_FIELDS.forEach(function (f) { $('ctx_' + f.id).value = ''; });
+    selected = ['auto']; mode = 'quick'; opts = Object.assign({}, A.MODES.quick.defaults);
+    refreshOpts(); update();
+    lsRemove(LS_DRAFT);
+    renderHistory();
+    toast('入力内容と履歴をすべて消しました。ChatGPT・Claude・Gemini側の会話も、必要に応じてそちらで削除・ログアウトしてください。');
+  }
+
   /* ---------- 初期化 ---------- */
   function init() {
     renderExamples(); renderCtx(); renderExperts(); renderModes(); renderOpts(); renderFollowups();
     refreshOpts();
-    applyState(lsGet(LS_DRAFT));
+    var p = lsGet(LS_PRIV);
+    privacy = (p === 'save' || p === 'nosave') ? p : null;
+    if (canSave()) { applyState(lsGet(LS_DRAFT)); }
+    renderPrivacy();
     update();
     renderHistory();
+    $('btnPrivSave').addEventListener('click', function () { setPrivacy('save'); });
+    $('btnPrivNoSave').addEventListener('click', function () { setPrivacy('nosave'); });
+    $('noSave').addEventListener('change', function () { setPrivacy($('noSave').checked ? 'nosave' : 'save'); });
+    $('btnWipe').addEventListener('click', wipeAll);
+    $('btnWipe2').addEventListener('click', wipeAll);
 
     ['stance', 'length'].forEach(function (id) { $(id).addEventListener('change', update); });
     ['content', 'customName'].forEach(function (id) { $(id).addEventListener('input', update); });
@@ -390,7 +462,7 @@
     $('btnGemini').addEventListener('click', function () { launch('gemini'); });
     $('btnCopy').addEventListener('click', copyOnly);
     $('btnClearHistory').addEventListener('click', function () {
-      if (confirm('履歴をすべて削除しますか？')) { lsRemove(LS_HIST); renderHistory(); }
+      if (confirm('履歴をすべて削除しますか？')) { lsRemove(LS_HIST); memHistory = []; renderHistory(); }
     });
   }
 
