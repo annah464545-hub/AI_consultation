@@ -5,88 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>AI専門家相談室</title>
-  <style>
-    :root {
-      --bg: #f4f7f6; --card: #fff; --text: #333; --sub: #666; --border: #e0e6ed;
-      --accent: #3498db; --accent-bg: #ebf5fb; --input-bg: #fff; --input-border: #ccc;
-      --primary: #10a37f; --secondary: #4285f4; --claude: #c4623f; --muted: #6c757d; --panel-bg: #fff8e6; --panel-border: #f0c36d;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #14181c; --card: #1e2328; --text: #e8ecef; --sub: #a0a9b2; --border: #333b43;
-        --accent: #5dade2; --accent-bg: #1b2a37; --input-bg: #262c32; --input-border: #444d56;
-        --panel-bg: #2e2a1c; --panel-border: #7a6128;
-      }
-    }
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
-    .container { max-width: 720px; margin: 0 auto; background: var(--card); padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    h1 { font-size: 1.4rem; text-align: center; margin: 0 0 8px; }
-    p.desc { font-size: 0.9rem; color: var(--sub); text-align: center; margin: 0 0 24px; }
-    label, .label { display: block; font-weight: bold; margin: 20px 0 8px; font-size: 0.95rem; }
-    .label small { font-weight: normal; color: var(--sub); }
-
-    .experts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .expert-btn { padding: 12px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); cursor: pointer; text-align: left; transition: 0.2s; font: inherit; }
-    .expert-btn:hover { border-color: var(--accent); }
-    .expert-btn:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-    .expert-btn.active { border-color: var(--accent); background: var(--accent-bg); }
-    .expert-title { font-weight: bold; font-size: 0.95rem; display: block; }
-    .expert-sub { font-size: 0.75rem; color: var(--sub); display: block; }
-
-    .mode-note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; background: var(--accent-bg); border: 1px solid var(--accent); }
-    .mode-note.panel { background: var(--panel-bg); border-color: var(--panel-border); }
-    #customName { margin-top: 10px; display: none; }
-    #customName.show { display: block; }
-
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    select, textarea, input[type="text"] { width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 8px; font-size: 1rem; font-family: inherit; background: var(--input-bg); color: var(--text); }
-    textarea { height: 140px; resize: vertical; }
-    textarea.preview { height: 220px; font-size: 0.85rem; }
-
-    .actions { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
-    button.act { border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; color: #fff; font-family: inherit; }
-    button.act:hover { filter: brightness(1.08); }
-    button.primary { background: var(--primary); }
-    button.secondary { background: var(--secondary); }
-    button.claude { background: var(--claude); }
-    button.copy { background: var(--muted); font-size: 0.9rem; padding: 12px; }
-    .toast { text-align: center; color: var(--primary); font-size: 0.85rem; margin-top: 10px; min-height: 22px; }
-    .toast.error { color: #e0523f; }
-
-    details { margin-top: 20px; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
-    summary { cursor: pointer; font-weight: bold; font-size: 0.92rem; }
-    .meta { font-size: 0.78rem; color: var(--sub); margin: 8px 0 6px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-    .history-item { display: block; width: 100%; text-align: left; margin-top: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; font: inherit; }
-    .history-item:hover { border-color: var(--accent); }
-    .history-head { font-size: 0.78rem; color: var(--sub); display: block; }
-    .history-body { font-size: 0.88rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    button.link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.8rem; padding: 4px 0; margin-top: 8px; font-family: inherit; }
-    .empty { font-size: 0.85rem; color: var(--sub); margin: 8px 0 0; }
-
-    .footer { margin-top: 24px; font-size: 0.75rem; color: var(--sub); border-top: 1px solid var(--border); padding-top: 14px; }
-    .footer p { margin: 4px 0; }
-
-    @media (max-width: 520px) {
-      body { padding: 10px; }
-      .container { padding: 16px; }
-      .experts, .row { grid-template-columns: 1fr; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <main class="container">
     <h1>AI専門家相談室</h1>
-    <p class="desc">相談したい専門家と内容を選んで、普段のAIに引き継ぎます。<br>専門家を2人以上選ぶと、AIが「専門家会議」を開いて議論します。</p>
+    <p class="desc">いつものAIに、プロの聞き方で相談を引き継ぎます。無料・登録不要。</p>
 
-    <div class="label" id="expertLabel">1. 誰に相談しますか？ <small>（最大4人まで選べます）</small></div>
+    <details class="howto">
+      <summary>💡 なぜこのサイトを通すと答えが良くなるの？（30秒）</summary>
+      <ol>
+        <li><b>状況を整理して渡せる</b>：背景・ゴール・制約を伝えると、一般論ではなく「あなた向け」の答えになります。</li>
+        <li><b>AIに「考え方」まで指示できる</b>：複数の専門家による議論、ネット検索、反対意見、確からしさの表示など、普通は思いつかない聞き方を自動で組み立てます。</li>
+        <li><b>返事が来たあとも使える</b>：「もっと具体的に」「反対の立場から」など、続きの質問をワンタップでコピーできます。</li>
+      </ol>
+      <p class="note">このサイトはAIを呼び出しません。作った指示文（プロンプト）を、あなたが普段使っているChatGPT・Claude・Geminiに渡すだけなので、費用はかかりません。</p>
+    </details>
+
+    <!-- 1. 相談内容 -->
+    <label for="content">1. どんな相談ですか？ <small>（ひと言でも、箇条書きでもOK）</small></label>
+    <textarea id="content" placeholder="例：最近仕事が忙しくて余裕がなく、人間関係でも少し疲れています..."></textarea>
+    <div class="chips" id="exampleChips" aria-label="入力例"></div>
+    <div class="safety" id="safety" hidden>
+      💬 とてもつらい気持ちが書かれているようです。AIに相談するだけでなく、身近な人や専門の相談窓口にも話してみてください（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。
+    </div>
+
+    <details id="ctxBox" class="ctx">
+      <summary>➕ もっと詳しく伝える <span class="state" id="ctxState">（任意・書くほど答えが具体的になります）</span></summary>
+      <div id="ctxFields"></div>
+    </details>
+
+    <!-- 2. 専門家 -->
+    <div class="label" id="expertLabel">2. 誰に相談しますか？ <small>（「おまかせ」か、最大4人まで）</small></div>
     <div class="experts" id="expertList" role="group" aria-labelledby="expertLabel"></div>
     <input type="text" id="customName" maxlength="30" placeholder="専門家の名前を入力（例：不動産の専門家、子育て相談員）" aria-label="自由に指定する専門家の名前">
     <div class="mode-note" id="modeNote" aria-live="polite"></div>
 
+    <!-- 3. 進め方 -->
+    <div class="label" id="modeLabel">3. AIにどう進めてもらいますか？</div>
+    <div class="modes" id="modeList" role="group" aria-labelledby="modeLabel"></div>
+
     <div class="row">
       <div>
-        <label for="stance">2. AIにどんなスタンスで答えてほしいですか？</label>
+        <label for="stance">どんなスタンスで？</label>
         <select id="stance">
           <option value="まずは共感して、じっくり話を聞いてほしい">まずは共感して、じっくり話を聞いてほしい</option>
           <option value="客観的なアドバイスや具体的な解決策がほしい">客観的なアドバイスや具体的な解決策がほしい</option>
@@ -105,22 +66,36 @@
       </div>
     </div>
 
-    <label for="content">3. 相談内容（箇条書きでもOK）</label>
-    <textarea id="content" placeholder="例：最近仕事が忙しくて余裕がなく、人間関係でも少し疲れています..."></textarea>
-
-    <details id="previewBox">
-      <summary>送信するプロンプトを確認・編集する</summary>
-      <div class="meta"><span>※ここで直接編集もできます（入力欄を変更すると作り直されます）</span><span id="charCount">0文字</span></div>
-      <textarea id="preview" class="preview" aria-label="送信するプロンプト"></textarea>
+    <details class="opts">
+      <summary>🔧 聞き方の工夫を調整する <span class="state">（初期設定のままでOK）</span></summary>
+      <div id="optList"></div>
     </details>
 
+    <!-- 4. AIに渡す -->
+    <div class="label">4. AIに渡す</div>
     <div class="actions">
-      <button type="button" class="act primary" id="btnChatGPT">ChatGPTで相談を始める ↗</button>
-      <button type="button" class="act claude" id="btnClaude">Claudeで相談を始める ↗</button>
-      <button type="button" class="act secondary" id="btnGemini">プロンプトをコピーしてGeminiを開く ↗</button>
-      <button type="button" class="act copy" id="btnCopy">相談用プロンプトだけをコピーする（Ctrl/⌘ + Enter）</button>
+      <button type="button" class="act primary" id="btnChatGPT">コピーしてChatGPTを開く ↗</button>
+      <button type="button" class="act claude" id="btnClaude">コピーしてClaudeを開く ↗</button>
+      <button type="button" class="act secondary" id="btnGemini">コピーしてGeminiを開く ↗</button>
+      <button type="button" class="act copy" id="btnCopy">プロンプトだけをコピーする（Ctrl/⌘ + Enter）</button>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <p class="note">どのAIも、無料プランでウェブ検索に対応しています（プランや時期により変わることがあります）。無料プランには回数制限があるため、1回の送信で議論までできるように作っています。</p>
+
+    <details id="previewBox">
+      <summary>📄 作られたプロンプトを見る・編集する <span class="state" id="charCount"></span></summary>
+      <h3 class="sub">このプロンプトに入っている工夫</h3>
+      <ul class="explain" id="explainList"></ul>
+      <div class="meta"><span>※直接編集もできます（入力欄を変更すると作り直されます）</span></div>
+      <textarea id="preview" class="preview" aria-label="作られたプロンプト"></textarea>
+    </details>
+
+    <!-- 返事が来たあと -->
+    <section class="follow" id="followBox">
+      <div class="label">5. AIの返事が来たら：続きの質問</div>
+      <p class="note">タップするとコピーされます。AIの画面に貼り付けて送信してください（同じ会話の続きで使います）。</p>
+      <div class="chips" id="followChips"></div>
+    </section>
 
     <details id="historyBox">
       <summary>過去の相談 <span id="historyCount"></span></summary>
@@ -129,390 +104,13 @@
     </details>
 
     <div class="footer">
-      <p>🔒 入力内容はこのブラウザ内にのみ保存され、ボタンを押したときだけ選んだAIサービスに送られます。</p>
-      <p>⚠️ 医療・法律・お金などの内容は、AIの回答を一般的な情報として参考にし、必要に応じて専門機関にご相談ください。</p>
+      <p>🔒 入力内容・履歴はこのブラウザ内にのみ保存されます。当サイトは内容を収集・送信しません（ボタンを押したときに、選んだAIサービスへ渡されます）。</p>
+      <p>⚠️ AIの回答は間違いを含むことがあります。医療・法律・お金などの重要な判断は、出典を確認し、必要に応じて専門機関にご相談ください。</p>
       <p>💬 つらい気持ちが強いときは、一人で抱えず専門の相談窓口へ（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。</p>
     </div>
   </main>
 
-  <script>
-  (function () {
-    'use strict';
-
-    var MAX_EXPERTS = 4;
-    var URL_LIMIT = 7500; // URLに埋め込めるエンコード後の長さの目安（超えたら貼り付け方式にする）
-    var LS_DRAFT = 'aiConsult.draft';
-    var LS_HIST = 'aiConsult.history';
-    var HIST_MAX = 10;
-
-    var EXPERTS = [
-      { id: 'counselor', icon: '🧠', name: '心理カウンセラー', sub: 'モヤモヤ・人間関係・心の疲れ',
-        persona: '経験豊富で温厚な心理カウンセラー。相談者の感情を否定せず受け止め、傾聴と優しい問いかけを行う。',
-        solo: 'あなたは経験豊富で温厚な心理カウンセラーです。相談者の感情を否定せず受け止め、心が軽くなるように傾聴と優しい問いかけを行ってください。' },
-      { id: 'career', icon: '💼', name: 'キャリアコーチ', sub: '仕事・転職・将来・目標設定',
-        persona: '論理的かつ前向きなキャリアコーチ。強みや価値観を引き出し、仕事や将来の選択肢を整理して具体的な一歩を提案する。',
-        solo: 'あなたは論理的かつ前向きなキャリアコーチです。相談者の強みや価値観を引き出し、仕事や将来の選択肢を整理して具体的な一歩を提案してください。' },
-      { id: 'business', icon: '💡', name: 'ビジネス・企画顧問', sub: 'アイデア出し・業務改善・副業',
-        persona: '実践的な経営・ビジネスコンサルタント。課題の本質を素早く見抜き、実行可能で効果的なアイデアや解決策を示す。',
-        solo: 'あなたは実践的な経営・ビジネスコンサルタントです。課題の本質を素早く見抜き、実行可能で効果的なアイデアや解決策を分かりやすく提示してください。' },
-      { id: 'life', icon: '🌿', name: '生活・習慣アドバイザー', sub: '時間管理・片付け・日々の悩み',
-        persona: '生活習慣や家計・時間管理に詳しいライフアドバイザー。無理なく続けられる現実的で優しい工夫を提案する。',
-        solo: 'あなたは生活習慣や家計・時間管理に詳しいライフアドバイザーです。無理なく続けられる現実的で優しい工夫を提案してください。' },
-      { id: 'health', icon: '🏃', name: '健康・ウェルネス顧問', sub: '睡眠・運動・食事・ストレス',
-        persona: '睡眠・運動・栄養・ストレスケアに詳しい健康アドバイザー。診断や治療の指示はせず一般的な情報提供にとどめ、必要に応じて医療機関の受診を勧める。',
-        solo: 'あなたは睡眠・運動・栄養・ストレスケアに詳しい健康アドバイザーです。診断や治療の指示はせず一般的な情報提供にとどめ、必要に応じて医療機関の受診を勧めながら、無理なく続けられる工夫を提案してください。' },
-      { id: 'money', icon: '💰', name: 'お金・ライフプラン顧問', sub: '家計・貯蓄・保険・制度',
-        persona: 'ファイナンシャルプランナーの視点を持つ顧問。特定の金融商品の購入を断定的に勧めず、判断材料とリスクを整理して示す。',
-        solo: 'あなたはファイナンシャルプランナーの視点を持つ顧問です。特定の金融商品の購入を断定的に勧めず、判断に必要な材料・選択肢・リスクを整理して分かりやすく示してください。' },
-      { id: 'learning', icon: '📚', name: '学び・スキルアップコーチ', sub: '勉強法・資格・習慣化',
-        persona: '学習設計と習慣化に詳しいコーチ。目標から逆算した学習計画と、続けやすい小さな仕組みを提案する。',
-        solo: 'あなたは学習設計と習慣化に詳しいコーチです。目標から逆算した学習計画と、続けやすい小さな仕組みを具体的に提案してください。' },
-      { id: 'communication', icon: '✉️', name: '伝え方・文章アドバイザー', sub: 'メール・言い方・断り方',
-        persona: '伝え方と文章表現に詳しいアドバイザー。相手との関係を保ちながら、誤解されにくい言い方や文面の案を示す。',
-        solo: 'あなたは伝え方と文章表現に詳しいアドバイザーです。相手との関係を保ちながら、誤解されにくい言い方や文面の案を、複数のトーンで示してください。' },
-      { id: 'custom', icon: '✏️', name: '自由に指定', sub: '上記にない分野の専門家を自分で指定',
-        persona: '', solo: '' }
-    ];
-
-    var $ = function (id) { return document.getElementById(id); };
-    var selected = ['counselor'];
-    var toastTimer = null;
-
-    // ---------- localStorage（使えない環境でも動くようにする） ----------
-    function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
-    function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* 保存できなくても動作は続ける */ } }
-    function lsRemove(key) { try { localStorage.removeItem(key); } catch (e) { /* noop */ } }
-
-    // ---------- 専門家ボタン ----------
-    function renderExperts() {
-      var wrap = $('expertList');
-      wrap.textContent = '';
-      EXPERTS.forEach(function (ex) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'expert-btn';
-        b.dataset.id = ex.id;
-        var t = document.createElement('span');
-        t.className = 'expert-title';
-        t.textContent = ex.icon + ' ' + ex.name;
-        var s = document.createElement('span');
-        s.className = 'expert-sub';
-        s.textContent = ex.sub;
-        b.appendChild(t);
-        b.appendChild(s);
-        b.addEventListener('click', function () { toggleExpert(ex.id); });
-        wrap.appendChild(b);
-      });
-    }
-
-    function toggleExpert(id) {
-      var i = selected.indexOf(id);
-      if (i >= 0) {
-        if (selected.length === 1) { toast('少なくとも1人は選んでください', true); return; }
-        selected.splice(i, 1);
-      } else {
-        if (selected.length >= MAX_EXPERTS) { toast('専門家は最大' + MAX_EXPERTS + '人まで選べます', true); return; }
-        selected.push(id);
-      }
-      refreshExpertState();
-      update();
-      if (id === 'custom' && selected.indexOf('custom') >= 0) { $('customName').focus(); }
-    }
-
-    function refreshExpertState() {
-      Array.prototype.forEach.call($('expertList').children, function (b) {
-        var on = selected.indexOf(b.dataset.id) >= 0;
-        b.classList.toggle('active', on);
-        b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-      $('customName').classList.toggle('show', selected.indexOf('custom') >= 0);
-
-      var names = displayNames();
-      var note = $('modeNote');
-      if (selected.length === 1) {
-        note.className = 'mode-note';
-        note.textContent = '👤 個別相談モード：' + names[0] + 'に相談します。';
-      } else {
-        note.className = 'mode-note panel';
-        note.textContent = '🗣 専門家会議モード：' + names.join('・') + ' と進行役のファシリテーターが議論し、結論をまとめます。';
-      }
-    }
-
-    function customLabel() {
-      return $('customName').value.trim().replace(/\s+/g, ' ').slice(0, 30);
-    }
-
-    function displayNames() {
-      return selected.map(function (id) {
-        if (id === 'custom') { return customLabel() || '（自由指定の専門家）'; }
-        return EXPERTS.filter(function (e) { return e.id === id; })[0].name;
-      });
-    }
-
-    function getExperts() {
-      var list = [];
-      selected.forEach(function (id) {
-        if (id === 'custom') {
-          var n = customLabel();
-          if (!n) { return; }
-          list.push({
-            name: n,
-            persona: '「' + n + '」の分野に詳しい専門家。その分野の知識と経験に基づいて助言する。',
-            solo: 'あなたは「' + n + '」の分野に詳しい経験豊富な専門家です。その分野の知識と経験に基づき、相談者に寄り添って分かりやすく助言してください。'
-          });
-        } else {
-          list.push(EXPERTS.filter(function (e) { return e.id === id; })[0]);
-        }
-      });
-      return list;
-    }
-
-    // ---------- プロンプト生成 ----------
-    function buildPrompt() {
-      var experts = getExperts();
-      if (experts.length === 0) { return ''; }
-      var stance = $('stance').value;
-      var length = $('length').value;
-      var content = $('content').value.trim() || '（ここに相談内容が入ります）';
-
-      if (experts.length === 1) {
-        return experts[0].solo +
-          '\n\n【希望する対応スタンス】\n' + stance +
-          '\n\n【回答の長さ】\n' + length +
-          '\n\n【相談内容】\n' + content +
-          '\n\nまずは上記の相談内容に対して、専門家として最初の返答をしてください。';
-      }
-
-      var lines = experts.map(function (e) { return '- ' + e.name + '：' + e.persona; }).join('\n');
-      return 'あなたはこれから、一人で次の複数の専門家になりきり、協力して相談者の悩みを解決する「専門家会議」を行ってください。' +
-        '\n\n【参加者】\n- ファシリテーター：進行役。議論を整理し、最後に全員の意見を統合して結論をまとめる。\n' + lines +
-        '\n\n【会議の進め方】' +
-        '\nステップ1：各専門家が、自分の専門の視点から、相談内容の見立てと意見を1つずつ述べる。' +
-        '\nステップ2：専門家同士が、互いの意見に対して補足・改善案・反論を述べ合う。意見が割れる点は無理にまとめず、違いをはっきり示す。' +
-        '\nステップ3：ファシリテーターが全員の意見を統合し、相談者にとっての結論と「今日からできる小さな一歩」を示す。' +
-        '\n\n【出力ルール】' +
-        '\n- 各発言の冒頭に、必ず発言者の名前（例：「ファシリテーター」「' + experts[0].name + '」）を明記する。' +
-        '\n- ステップ1〜3を1回の出力で最後まで行う。' +
-        '\n- 回答の長さ：' + length +
-        '\n- 医療・法律・投資などに関わる内容は一般的な情報提供にとどめ、必要に応じて専門機関への相談を勧める。' +
-        '\n- 最後に、会議を続けるための質問を相談者へ1つだけ添える。' +
-        '\n\n【希望する対応スタンス】\n' + stance +
-        '\n\n【相談内容】\n' + content;
-    }
-
-    function update() {
-      refreshExpertState();
-      $('preview').value = buildPrompt();
-      updateCount();
-      saveDraft();
-    }
-
-    function updateCount() {
-      $('charCount').textContent = $('preview').value.length + '文字';
-    }
-
-    // ---------- 下書き ----------
-    function saveDraft() {
-      lsSet(LS_DRAFT, {
-        selected: selected, custom: $('customName').value, stance: $('stance').value,
-        length: $('length').value, content: $('content').value
-      });
-    }
-
-    function applyState(s) {
-      if (!s) { return; }
-      var ids = Array.isArray(s.selected) ? s.selected.filter(function (id) {
-        return EXPERTS.some(function (e) { return e.id === id; });
-      }).slice(0, MAX_EXPERTS) : [];
-      if (ids.length) { selected = ids; }
-      if (typeof s.custom === 'string') { $('customName').value = s.custom.slice(0, 30); }
-      setSelectValue($('stance'), s.stance);
-      setSelectValue($('length'), s.length);
-      if (typeof s.content === 'string') { $('content').value = s.content; }
-    }
-
-    function setSelectValue(sel, v) {
-      if (typeof v !== 'string') { return; }
-      for (var i = 0; i < sel.options.length; i++) {
-        if (sel.options[i].value === v) { sel.value = v; return; }
-      }
-    }
-
-    // ---------- 履歴 ----------
-    function getHistory() {
-      var h = lsGet(LS_HIST);
-      return Array.isArray(h) ? h : [];
-    }
-
-    function saveHistory() {
-      var entry = {
-        t: Date.now(), selected: selected.slice(), custom: $('customName').value,
-        stance: $('stance').value, length: $('length').value, content: $('content').value.trim()
-      };
-      var key = entry.selected.join(',') + '|' + entry.content;
-      var h = getHistory().filter(function (x) {
-        return (Array.isArray(x.selected) ? x.selected.join(',') : '') + '|' + x.content !== key;
-      });
-      h.unshift(entry);
-      lsSet(LS_HIST, h.slice(0, HIST_MAX));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      var h = getHistory();
-      var list = $('historyList');
-      list.textContent = '';
-      $('historyCount').textContent = h.length ? '（' + h.length + '件）' : '';
-      $('btnClearHistory').style.display = h.length ? '' : 'none';
-      if (!h.length) {
-        var p = document.createElement('p');
-        p.className = 'empty';
-        p.textContent = 'まだ履歴はありません。AIを開く／コピーすると、ここに残ります。';
-        list.appendChild(p);
-        return;
-      }
-      h.forEach(function (x) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'history-item';
-        var names = (x.selected || []).map(function (id) {
-          if (id === 'custom') { return (x.custom || '').trim() || '自由指定'; }
-          var e = EXPERTS.filter(function (ex) { return ex.id === id; })[0];
-          return e ? e.name : '';
-        }).filter(Boolean).join('・');
-        var head = document.createElement('span');
-        head.className = 'history-head';
-        head.textContent = new Date(x.t).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + '　' + names;
-        var body = document.createElement('span');
-        body.className = 'history-body';
-        body.textContent = String(x.content || '').replace(/\s+/g, ' ');
-        b.appendChild(head);
-        b.appendChild(body);
-        b.addEventListener('click', function () {
-          applyState(x);
-          update();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          toast('履歴から復元しました');
-        });
-        list.appendChild(b);
-      });
-    }
-
-    // ---------- クリップボード・起動 ----------
-    function copyText(text) {
-      function fallback() {
-        return new Promise(function (resolve) {
-          try {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            ta.setAttribute('readonly', '');
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            var ok = document.execCommand('copy');
-            document.body.removeChild(ta);
-            resolve(ok);
-          } catch (e) { resolve(false); }
-        });
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text).then(function () { return true; }, fallback);
-      }
-      return fallback();
-    }
-
-    function toast(msg, isError) {
-      var t = $('toast');
-      t.textContent = msg;
-      t.className = 'toast' + (isError ? ' error' : '');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(function () { t.textContent = ''; }, 6000);
-    }
-
-    // 入力チェック。問題なければ送信するプロンプト（プレビュー欄の内容）を返す
-    function validate() {
-      if (!$('content').value.trim()) {
-        toast('相談内容を入力してください。', true);
-        $('content').focus();
-        return null;
-      }
-      if (getExperts().length === 0) {
-        toast('「自由に指定」の専門家名を入力してください。', true);
-        $('customName').focus();
-        return null;
-      }
-      var p = $('preview').value.trim();
-      if (!p) { update(); p = $('preview').value.trim(); }
-      return p;
-    }
-
-    var SERVICES = {
-      chatgpt: { name: 'ChatGPT', base: 'https://chatgpt.com/', param: '?q=' },
-      claude:  { name: 'Claude',  base: 'https://claude.ai/new', param: '?q=' },
-      gemini:  { name: 'Gemini',  base: 'https://gemini.google.com/app', param: null }
-    };
-
-    function launch(key) {
-      var prompt = validate();
-      if (!prompt) { return; }
-      var svc = SERVICES[key];
-      var url = svc.base;
-      var autoFilled = false;
-      if (svc.param) {
-        var enc = encodeURIComponent(prompt);
-        if (enc.length <= URL_LIMIT) { url = svc.base + svc.param + enc; autoFilled = true; }
-      }
-      // ポップアップブロック対策のため、クリック直後に同期でタブを開く（コピーは並行して実行）
-      var copying = copyText(prompt);
-      window.open(url, '_blank', 'noopener');
-      copying.then(function (ok) {
-        if (!ok) {
-          $('previewBox').open = true;
-          toast('自動コピーに失敗しました。「送信するプロンプト」から手動でコピーしてください。', true);
-        } else if (autoFilled) {
-          toast(svc.name + 'を開きました。入力欄が空のときは貼り付け（Ctrl/⌘ + V）してください（コピー済み）。');
-        } else {
-          toast('コピーしました！開いた' + svc.name + 'の画面で貼り付けてください。');
-        }
-      });
-      saveHistory();
-    }
-
-    function copyOnly() {
-      var prompt = validate();
-      if (!prompt) { return; }
-      copyText(prompt).then(function (ok) {
-        if (ok) { toast('相談用プロンプトをクリップボードにコピーしました！'); }
-        else { $('previewBox').open = true; toast('自動コピーに失敗しました。プレビューから手動でコピーしてください。', true); }
-      });
-      saveHistory();
-    }
-
-    // ---------- 初期化 ----------
-    function init() {
-      renderExperts();
-      applyState(lsGet(LS_DRAFT));
-      update();
-      renderHistory();
-
-      ['stance', 'length'].forEach(function (id) { $(id).addEventListener('change', update); });
-      ['content', 'customName'].forEach(function (id) { $(id).addEventListener('input', update); });
-      $('preview').addEventListener('input', updateCount);
-      $('content').addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); copyOnly(); }
-      });
-      $('btnChatGPT').addEventListener('click', function () { launch('chatgpt'); });
-      $('btnClaude').addEventListener('click', function () { launch('claude'); });
-      $('btnGemini').addEventListener('click', function () { launch('gemini'); });
-      $('btnCopy').addEventListener('click', copyOnly);
-      $('btnClearHistory').addEventListener('click', function () {
-        if (confirm('履歴をすべて削除しますか？')) { lsRemove(LS_HIST); renderHistory(); }
-      });
-    }
-
-    init();
-  })();
-  </script>
+  <script src="js/prompt.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
