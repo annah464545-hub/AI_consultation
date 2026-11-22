@@ -118,3 +118,9 @@ button.wipe { background: var(--muted); font-size: 0.9rem; padding: 11px; width:
 button.link.inline { margin: 0 0 0 6px; font-weight: bold; }
 @media (prefers-color-scheme: dark) { :root { --priv-bg: #16302a; } }
 @media (max-width: 520px) { .priv-btns { grid-template-columns: 1fr; } }
+
+/* ---- 引き渡しの手順ガイド ---- */
+button.act small { font-weight: normal; font-size: 0.75rem; opacity: 0.95; }
+.guide { margin-top: 10px; padding: 12px 14px; border: 2px solid var(--primary); border-radius: 10px; background: var(--accent-bg); font-size: 0.88rem; }
+.guide b.title { display: block; margin-bottom: 4px; }
+.guide ol { margin: 4px 0 0; padding-left: 22px; }

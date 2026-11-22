@@ -2,7 +2,8 @@
   'use strict';
 
   var A = window.AIC;
-  var URL_LIMIT = 7500;      // URLに埋め込めるエンコード後の長さの目安（超えたら貼り付け方式にする）
+  var URL_LIMIT = 7500;      // ?q= 方式で安全に送れる、エンコード後の長さの目安（超えるとサーバー側でエラーになることがある）
+  var HASH_LIMIT = 100000;   // #?q= 方式（サーバーに送られない部分に入れる）の上限
   var HIST_MAX = 10;
   var LS_DRAFT = 'aiConsult.draft.v3';
   var LS_HIST = 'aiConsult.history.v3';
@@ -317,11 +318,30 @@
   }
 
   /* ---------- AIに渡す ---------- */
+  // chatgpt: URLでの自動入力に対応 / claude: 対応していない可能性が高い（短い場合のみ試す） / gemini: 非対応（貼り付けが必要）
   var SERVICES = {
-    chatgpt: { name: 'ChatGPT', base: 'https://chatgpt.com/', param: '?q=' },
-    claude:  { name: 'Claude',  base: 'https://claude.ai/new', param: '?q=' },
-    gemini:  { name: 'Gemini',  base: 'https://gemini.google.com/app', param: null }
+    chatgpt: { name: 'ChatGPT', base: 'https://chatgpt.com/', param: '?q=', hashParam: '#?q=', autoFill: true },
+    claude:  { name: 'Claude',  base: 'https://claude.ai/new', param: '?q=', hashParam: null, autoFill: false },
+    gemini:  { name: 'Gemini',  base: 'https://gemini.google.com/app', param: null, hashParam: null, autoFill: false }
   };
+
+  function showGuide(svc, ok, autoFilled) {
+    var g = $('launchGuide');
+    g.textContent = '';
+    g.hidden = false;
+    g.appendChild(el('b', 'title', ok ? '✅ コピーしました。次の手順で進めてください' : '⚠ 自動コピーに失敗しました。下の「プロンプトを見る」から手動でコピーしてください'));
+    var ol = el('ol');
+    if (autoFilled) {
+      ol.appendChild(el('li', null, svc.name + 'のタブが開き、相談文が入力欄に自動で入ります。'));
+      ol.appendChild(el('li', null, '入力欄が空のときは、入力欄をタップして貼り付けてください（Ctrl/⌘ + V、スマホは長押し→ペースト）。'));
+      ol.appendChild(el('li', null, '内容を確認して、送信ボタンを押します。'));
+    } else {
+      ol.appendChild(el('li', null, svc.name + 'のタブが開きます。'));
+      ol.appendChild(el('li', null, '入力欄をタップして貼り付けます（Ctrl/⌘ + V、スマホは長押し→ペースト）。'));
+      ol.appendChild(el('li', null, '内容を確認して、送信ボタンを押します。'));
+    }
+    g.appendChild(ol);
+  }
 
   function copyText(text) {
     function fallback() {
@@ -355,16 +375,18 @@
     var prompt = validate();
     if (!prompt) { return; }
     var svc = SERVICES[key], url = svc.base, auto = false;
-    if (svc.param) {
-      var enc = encodeURIComponent(prompt);
-      if (enc.length <= URL_LIMIT) { url = svc.base + svc.param + enc; auto = true; }
+    var enc = encodeURIComponent(prompt);
+    if (svc.param && enc.length <= URL_LIMIT) {
+      url = svc.base + svc.param + enc; auto = svc.autoFill;
+    } else if (svc.hashParam && enc.length <= HASH_LIMIT) {
+      url = svc.base + svc.hashParam + enc; auto = svc.autoFill;   // 長い文章は、サーバーに送られない # 側に入れる
     }
-    var copying = copyText(prompt);        // クリック直後に同期でタブを開く（ポップアップブロック対策）
+    var copying = copyText(prompt);        // 失敗時の保険として、必ずコピーもする。クリック直後に同期でタブを開く（ポップアップブロック対策）
     window.open(url, '_blank', 'noopener');
+    $('toast').textContent = '';
     copying.then(function (ok) {
-      if (!ok) { $('previewBox').open = true; toast('自動コピーに失敗しました。プロンプト欄から手動でコピーしてください。', true); }
-      else if (auto) { toast(svc.name + 'を開きました。入力欄が空のときは貼り付け（Ctrl/⌘ + V）してください（コピー済み）。'); }
-      else { toast('コピーしました！開いた' + svc.name + 'の画面で貼り付けて送信してください。'); }
+      if (!ok) { $('previewBox').open = true; }
+      showGuide(svc, ok, auto);
     });
     saveHistory();
   }
@@ -373,6 +395,7 @@
     var prompt = validate();
     if (!prompt) { return; }
     copyText(prompt).then(function (ok) {
+      $('launchGuide').hidden = true;
       if (ok) { toast('プロンプトをコピーしました！お好みのAIに貼り付けて送信してください。'); }
       else { $('previewBox').open = true; toast('自動コピーに失敗しました。プロンプト欄から手動でコピーしてください。', true); }
     });
