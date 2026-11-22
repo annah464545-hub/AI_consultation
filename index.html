@@ -99,10 +99,10 @@
     </details>
 
     <!-- 4. AIに渡す -->
-    <div class="label">4. AIに渡す</div>
+    <div class="label">4. AIに渡す <small>（相談文が自動で入力されない場合は、入力欄に貼り付けてください）</small></div>
     <div class="actions">
-      <button type="button" class="act primary" id="btnChatGPT">ChatGPTで開く ↗<br><small>相談文が自動で入力されます</small></button>
-      <button type="button" class="act claude" id="btnClaude">コピーしてClaudeを開く ↗<br><small>開いたら貼り付けが必要です</small></button>
+      <button type="button" class="act primary" id="btnChatGPT">ChatGPTで開く ↗<br><small>相談文が自動で入力されます（入らない場合は貼り付け）</small></button>
+      <button type="button" class="act claude" id="btnClaude">Claudeで開く ↗<br><small>相談文が自動で入力されます（長い場合・入らない場合は貼り付け）</small></button>
       <button type="button" class="act secondary" id="btnGemini">コピーしてGeminiを開く ↗<br><small>開いたら貼り付けが必要です</small></button>
       <button type="button" class="act copy" id="btnCopy">プロンプトだけをコピーする（Ctrl/⌘ + Enter）</button>
     </div>
@@ -112,7 +112,7 @@
       🧹 共用のパソコン（ネットカフェ・家族共用など）で使ったときは、<b>終わったら必ず消してください。</b>
       <button type="button" class="link inline" id="btnWipe2">入力内容と履歴をすべて消す</button>
     </div>
-    <p class="note">自動入力に対応しているのは、いまのところChatGPTだけです。ClaudeとGeminiは、サービス側の仕様でURLからの自動入力ができないため、コピーした文章を貼り付けてください。</p>
+    <p class="note">自動入力に対応しているのは、ChatGPTとClaudeです。ただし、相談文が長い場合や、サービス側の仕様変更で入らない場合は、毎回コピーしてあるので、入力欄に貼り付けてください。Geminiは、サービス側の仕様でURLからの自動入力ができないため、貼り付けが必要です。</p>
     <p class="note">どのAIも、無料プランでウェブ検索に対応しています（プランや時期により変わることがあります）。無料プランには回数制限があるため、1回の送信で議論までできるように作っています。</p>
 
     <details id="previewBox">

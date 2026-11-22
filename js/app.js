@@ -318,25 +318,25 @@
   }
 
   /* ---------- AIに渡す ---------- */
-  // chatgpt: URLでの自動入力に対応 / claude: 対応していない可能性が高い（短い場合のみ試す） / gemini: 非対応（貼り付けが必要）
+  // chatgpt・claude: URLでの自動入力に対応（claudeは長い文章だと使えない） / gemini: 非対応（貼り付けが必要）
   var SERVICES = {
     chatgpt: { name: 'ChatGPT', base: 'https://chatgpt.com/', param: '?q=', hashParam: '#?q=', autoFill: true },
-    claude:  { name: 'Claude',  base: 'https://claude.ai/new', param: '?q=', hashParam: null, autoFill: false },
+    claude:  { name: 'Claude',  base: 'https://claude.ai/new', param: '?q=', hashParam: null, autoFill: true },
     gemini:  { name: 'Gemini',  base: 'https://gemini.google.com/app', param: null, hashParam: null, autoFill: false }
   };
 
-  function showGuide(svc, ok, autoFilled) {
+  function showGuide(svc, ok, autoFilled) {   // autoFilled: URLに相談文を入れて開いたか
     var g = $('launchGuide');
     g.textContent = '';
     g.hidden = false;
     g.appendChild(el('b', 'title', ok ? '✅ コピーしました。次の手順で進めてください' : '⚠ 自動コピーに失敗しました。下の「プロンプトを見る」から手動でコピーしてください'));
     var ol = el('ol');
     if (autoFilled) {
-      ol.appendChild(el('li', null, svc.name + 'のタブが開き、相談文が入力欄に自動で入ります。'));
+      ol.appendChild(el('li', null, svc.name + 'のタブが開き、相談文が入力欄に自動で入ります（入らない場合は、次の貼り付けをお願いします）。'));
       ol.appendChild(el('li', null, '入力欄が空のときは、入力欄をタップして貼り付けてください（Ctrl/⌘ + V、スマホは長押し→ペースト）。'));
       ol.appendChild(el('li', null, '内容を確認して、送信ボタンを押します。'));
     } else {
-      ol.appendChild(el('li', null, svc.name + 'のタブが開きます。'));
+      ol.appendChild(el('li', null, svc.name + 'のタブが開きます' + (svc.autoFill ? '（相談文が長いため、自動入力はできません）。' : '。')));
       ol.appendChild(el('li', null, '入力欄をタップして貼り付けます（Ctrl/⌘ + V、スマホは長押し→ペースト）。'));
       ol.appendChild(el('li', null, '内容を確認して、送信ボタンを押します。'));
     }
