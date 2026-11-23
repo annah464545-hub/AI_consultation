@@ -124,3 +124,22 @@ button.act small { font-weight: normal; font-size: 0.75rem; opacity: 0.95; }
 .guide { margin-top: 10px; padding: 12px 14px; border: 2px solid var(--primary); border-radius: 10px; background: var(--accent-bg); font-size: 0.88rem; }
 .guide b.title { display: block; margin-bottom: 4px; }
 .guide ol { margin: 4px 0 0; padding-left: 22px; }
+
+/* ---- AI選択 ---- */
+.ai-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ai-btn { padding: 12px; border: 3px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); cursor: pointer; text-align: center; font: inherit; transition: 0.2s; }
+.ai-btn:hover { border-color: var(--accent); }
+.ai-btn.active { background: var(--accent-bg); }
+.ai-btn.chatgpt.active { border-color: var(--primary); }
+.ai-btn.claude.active { border-color: var(--claude); }
+.ai-btn.gemini.active { border-color: var(--secondary); }
+.ai-title { display: block; font-weight: bold; font-size: 1rem; }
+.ai-sub { display: block; font-size: 0.72rem; color: var(--sub); margin-top: 2px; }
+.guide.empty-guide { border: 1px dashed var(--border); background: transparent; color: var(--sub); }
+.guide .reason { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: var(--panel-bg); border: 1px solid var(--panel-border); font-size: 0.82rem; }
+.guide li { margin-bottom: 4px; }
+button.go { background: var(--muted); font-size: 1.05rem; }
+button.go.chatgpt { background: var(--primary); }
+button.go.claude { background: var(--claude); }
+button.go.gemini { background: var(--secondary); }
+@media (max-width: 520px) { .ai-choices { grid-template-columns: 1fr; } }
