@@ -144,3 +144,7 @@ button.go.svc-claude { background: var(--claude); }
 button.go.svc-gemini { background: var(--secondary); }
 button.go.svc-other { background: var(--muted); }
 @media (max-width: 380px) { .ai-choices { grid-template-columns: 1fr; } }
+
+/* ---- バージョン表示（古いCSSが残っていないか確認用） ---- */
+.ver { font-size: 0.7rem; }
+.ver-css::after { content: 'v10'; }
