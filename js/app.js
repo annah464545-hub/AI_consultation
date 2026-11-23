@@ -117,7 +117,7 @@
       b.type = 'button';
       b.addEventListener('click', function () {
         copyText(f.text).then(function (ok) {
-          toast(ok ? '「' + f.label.replace(/^\S+\s/, '') + '」をコピーしました。AIの画面に貼り付けて送信してください。' : 'コピーに失敗しました。', !ok);
+          toast(ok ? '「' + f.label.replace(/^\S+\s/, '') + '」をコピーしました。相談中のAIの画面（会話の続き）に貼り付けて送信してください。' : 'コピーに失敗しました。', !ok);
         });
       });
       wrap.appendChild(b);
@@ -384,7 +384,7 @@
       ol.appendChild(el('li', null, '入力欄をタップして、貼り付けてください（Ctrl/⌘ + V、スマホは長押し→ペースト）。'));
     }
     ol.appendChild(el('li', null, '内容を確認して、送信します。'));
-    ol.appendChild(el('li', null, 'AIの返事が来たら、このタブに戻ると「続きの質問」が使えます。'));
+    ol.appendChild(el('li', null, 'AIの返事が来たあとの会話は、そのAIの画面の中で続けてください（このサイトに返事は表示されません）。新しく別の相談をしたいときは、このサイトにもう一度来て、相談内容を入力してください。'));
     g.appendChild(ol);
     if (!plan.auto) {
       g.appendChild(el('p', 'reason', svc.autoFill
@@ -434,7 +434,7 @@
     window.open(plan.url, '_blank', 'noopener');
     copying.then(function (ok) {
       if (!ok) { $('previewBox').open = true; toast('自動コピーに失敗しました。プロンプト欄から手動でコピーしてください。', true); }
-      else { toast(svc.name + 'を開きました。タブを切り替えて、手順の続きを進めてください。'); }
+      else { toast(svc.name + 'を開きました。開いたタブで、手順に沿って進めてください。'); }
     });
     saveHistory();
   }
