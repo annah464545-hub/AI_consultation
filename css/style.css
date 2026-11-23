@@ -64,7 +64,6 @@ button.act { border: none; padding: 14px; border-radius: 10px; font-size: 1rem; 
 button.act:hover { filter: brightness(1.08); }
 button.primary { background: var(--primary); }
 button.secondary { background: var(--secondary); }
-button.claude { background: var(--claude); }
 button.copy { background: var(--muted); font-size: 0.9rem; padding: 12px; }
 .toast { text-align: center; color: var(--primary); font-size: 0.85rem; margin-top: 10px; min-height: 22px; }
 .toast.error { color: var(--danger); }
@@ -126,20 +125,22 @@ button.act small { font-weight: normal; font-size: 0.75rem; opacity: 0.95; }
 .guide ol { margin: 4px 0 0; padding-left: 22px; }
 
 /* ---- AI選択 ---- */
-.ai-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ai-choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .ai-btn { padding: 12px; border: 3px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); cursor: pointer; text-align: center; font: inherit; transition: 0.2s; }
 .ai-btn:hover { border-color: var(--accent); }
 .ai-btn.active { background: var(--accent-bg); }
-.ai-btn.chatgpt.active { border-color: var(--primary); }
-.ai-btn.claude.active { border-color: var(--claude); }
-.ai-btn.gemini.active { border-color: var(--secondary); }
+.ai-btn.svc-chatgpt.active { border-color: var(--primary); }
+.ai-btn.svc-claude.active { border-color: var(--claude); }
+.ai-btn.svc-gemini.active { border-color: var(--secondary); }
+.ai-btn.svc-other.active { border-color: var(--muted); }
 .ai-title { display: block; font-weight: bold; font-size: 1rem; }
 .ai-sub { display: block; font-size: 0.72rem; color: var(--sub); margin-top: 2px; }
 .guide.empty-guide { border: 1px dashed var(--border); background: transparent; color: var(--sub); }
 .guide .reason { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: var(--panel-bg); border: 1px solid var(--panel-border); font-size: 0.82rem; }
 .guide li { margin-bottom: 4px; }
 button.go { background: var(--muted); font-size: 1.05rem; }
-button.go.chatgpt { background: var(--primary); }
-button.go.claude { background: var(--claude); }
-button.go.gemini { background: var(--secondary); }
-@media (max-width: 520px) { .ai-choices { grid-template-columns: 1fr; } }
+button.go.svc-chatgpt { background: var(--primary); }
+button.go.svc-claude { background: var(--claude); }
+button.go.svc-gemini { background: var(--secondary); }
+button.go.svc-other { background: var(--muted); }
+@media (max-width: 380px) { .ai-choices { grid-template-columns: 1fr; } }
