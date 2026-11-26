@@ -2,7 +2,8 @@
   'use strict';
 
   var A = window.AIC;
-  var APP_VERSION = 'v10';
+  var P = window.AICP;
+  var APP_VERSION = 'v13';
   var URL_LIMIT = 7500;      // ?q= 方式で安全に送れる、エンコード後の長さの目安（超えるとサーバー側でエラーになることがある）
   var HASH_LIMIT = 100000;   // #?q= 方式（サーバーに送られない部分に入れる）の上限
   var HIST_MAX = 10;
@@ -175,7 +176,8 @@
     return {
       experts: getExperts(), auto: isAuto(), mode: mode, opts: opts,
       stance: $('stance').value, length: $('length').value,
-      content: $('content').value, ctx: ctx
+      content: $('content').value, ctx: ctx,
+      profile: profileAttach()
     };
   }
 
@@ -461,6 +463,311 @@
     saveHistory();
   }
 
+  /* ---------- プロフィール（あなたについて） ---------- */
+  var LS_PROF = 'aiConsult.profile.v1';
+  var profile = null;                // { ans, lines, attach, t }
+  var formAns = P.emptyAns();
+  var scaleBtns = [], chipBtns = [], textInputs = [];
+
+  function loadProfile() {
+    var p = lsGet(LS_PROF);
+    if (p && typeof p === 'object' && typeof p.lines === 'string') {
+      profile = p;
+      formAns = (p.ans && p.ans.scale) ? p.ans : P.emptyAns();
+    }
+  }
+  function saveProfile() {
+    if (!canSave()) { return; }
+    if (profile) { lsSet(LS_PROF, profile); } else { lsRemove(LS_PROF); }
+  }
+  function profileAttach() {
+    return (profile && profile.attach !== false && profile.lines && profile.lines.trim()) ? profile.lines.trim() : '';
+  }
+
+  function renderProfileForm() {
+    var wrap = $('profileForm');
+    wrap.textContent = '';
+    scaleBtns = []; chipBtns = []; textInputs = [];
+    P.SCALE.forEach(function (q) {
+      var fs = el('fieldset', 'pq');
+      fs.appendChild(el('legend', null, q.title));
+      var row = el('div', 'pq-row');
+      q.choices.forEach(function (c, i) {
+        var b = el('button', 'pq-btn', c.s);
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          if (formAns.scale[q.id] === i) { delete formAns.scale[q.id]; } else { formAns.scale[q.id] = i; }
+          paintProfileForm();
+        });
+        row.appendChild(b);
+        scaleBtns.push({ b: b, q: q.id, i: i });
+      });
+      fs.appendChild(row);
+      wrap.appendChild(fs);
+    });
+    P.MULTI.forEach(function (m) {
+      var fs = el('fieldset', 'pq');
+      var lg = el('legend', null, m.title + ' ');
+      lg.appendChild(el('small', null, m.hint));
+      fs.appendChild(lg);
+      var row = el('div', 'pq-chips');
+      m.items.forEach(function (it) {
+        var b = el('button', 'pq-btn', it);
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          var arr = formAns.multi[m.id] || [];
+          var k = arr.indexOf(it);
+          if (k >= 0) { arr.splice(k, 1); } else { arr.push(it); }
+          formAns.multi[m.id] = arr;
+          paintProfileForm();
+        });
+        row.appendChild(b);
+        chipBtns.push({ b: b, m: m.id, v: it });
+      });
+      fs.appendChild(row);
+      wrap.appendChild(fs);
+    });
+    P.TEXTS.forEach(function (t) {
+      var fs = el('fieldset', 'pq');
+      var lg = el('legend', null, t.title + ' ');
+      lg.appendChild(el('small', null, '（任意）'));
+      fs.appendChild(lg);
+      var inp = el('input');
+      inp.type = 'text'; inp.maxLength = t.max; inp.placeholder = t.placeholder;
+      inp.setAttribute('aria-label', t.title);
+      inp.addEventListener('input', function () { formAns.text[t.id] = inp.value; });
+      fs.appendChild(inp);
+      wrap.appendChild(fs);
+      textInputs.push({ inp: inp, id: t.id });
+    });
+    syncProfileInputs();
+    paintProfileForm();
+  }
+
+  function paintProfileForm() {
+    scaleBtns.forEach(function (x) {
+      var on = formAns.scale[x.q] === x.i;
+      x.b.classList.toggle('active', on);
+      x.b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    chipBtns.forEach(function (x) {
+      var on = (formAns.multi[x.m] || []).indexOf(x.v) >= 0;
+      x.b.classList.toggle('active', on);
+      x.b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  function syncProfileInputs() {
+    textInputs.forEach(function (x) { x.inp.value = (formAns.text && formAns.text[x.id]) || ''; });
+  }
+  function resetProfileForm() {
+    formAns = P.emptyAns();
+    syncProfileInputs();
+    paintProfileForm();
+  }
+
+  function makeProfile() {
+    if (P.countAnswered(formAns) === 0) { toast('1つ以上、質問に答えてください。', true); return; }
+    var lines = P.buildLines(formAns);
+    if (!lines) { toast('「どちらでも」だけの回答のため、プロフィールに載せる内容がありません。他の質問にも答えてみてください。', true); return; }
+    profile = { ans: JSON.parse(JSON.stringify(formAns)), lines: lines, attach: profile ? profile.attach !== false : true, t: Date.now(), source: 'site' };
+    saveProfile();
+    renderProfile();
+    update();
+    toast('プロフィールを作りました。下の手順で、AIに記憶させてください。');
+  }
+
+  function renderProfile() {
+    var has = !!profile;
+    $('profileResult').hidden = !has;
+    $('btnProfileMake').textContent = has ? '🔄 プロフィールを更新する' : '✨ プロフィールを作る';
+    var st = $('profileState');
+    if (has) {
+      st.textContent = profile.source === 'ai' ? '✓ 作成済み（AIが作成）' : '✓ 作成済み（' + P.countAnswered(profile.ans || P.emptyAns()) + '項目）';
+      st.className = 'state ok';
+      $('profileText').value = profile.lines;
+      $('profAttach').checked = profile.attach !== false;
+    } else {
+      st.textContent = '未作成（任意・約3分）';
+      st.className = 'state';
+    }
+    renderProfStep2();
+  }
+
+  function deleteProfile() {
+    if (!confirm('プロフィールを削除します。\n（AI側に記憶させた内容は、AIの設定画面で別に削除する必要があります）\nよろしいですか？')) { return; }
+    profile = null; lsRemove(LS_PROF); profSkip = false; profPath = null;
+    resetProfileForm(); renderProfile(); update();
+    toast('プロフィールを削除しました。AIに記憶させていた場合は、AIの設定画面（メモリ）でも削除してください。');
+  }
+
+  function copyProfile(kind) {
+    if (!profile || !profile.lines.trim()) { toast('先にプロフィールを作ってください。', true); return; }
+    var text = kind === 'mem' ? P.memoryPrompt(profile.lines.trim()) : P.shortSettings(profile.lines.trim());
+    copyText(text).then(function (ok) {
+      toast(ok ? (kind === 'mem' ? '記憶させる文章をコピーしました。AIのチャット欄に貼り付けて送信してください。'
+                                  : '設定欄用の短縮版をコピーしました。AIの「保存済みの情報」などに貼り付けてください。')
+               : 'コピーに失敗しました。', !ok);
+    });
+  }
+
+  /* ---------- プロフィール STEP2：そのまま記憶させる／AIで追加診断 ---------- */
+  var profPath = null;       // 'memory'（① これで十分） | 'deep'（② もっと自分に合わせたい）
+  var profSkip = false;      // 基本診断を飛ばして、AIだけで診断する
+  var PASTE_HOW = '（Ctrl/⌘ + V、スマホは長押し→ペースト）';
+
+  // 「AIを選ぶ → 手順を表示 → 実行（コピー＆AIを開く）」の共通部品
+  function makeLauncher(cfg) {
+    var ai = null;
+
+    function label(svc) { return svc.manual ? cfg.manualLabel : '▶ ' + svc.name + cfg.goSuffix; }
+
+    function renderChoices() {
+      var wrap = $(cfg.choices);
+      wrap.textContent = '';
+      ['chatgpt', 'claude', 'gemini', 'other'].forEach(function (id) {
+        var svc = SERVICES[id];
+        var b = el('button', 'ai-btn svc-' + id);
+        b.type = 'button';
+        b.dataset.id = id;
+        b.appendChild(el('span', 'ai-title', svc.name));
+        b.appendChild(el('span', 'ai-sub', svc.sub));
+        b.addEventListener('click', function () { ai = id; render(); });
+        wrap.appendChild(b);
+      });
+    }
+
+    function render() {
+      Array.prototype.forEach.call($(cfg.choices).children, function (b) {
+        var on = b.dataset.id === ai;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      var g = $(cfg.guide), btn = $(cfg.btn);
+      g.textContent = '';
+      var text = ai ? cfg.text(ai) : '';
+      if (!ai || !text) {
+        g.className = 'guide empty-guide';
+        g.appendChild(el('p', 'note', !ai ? '上でAIを選ぶと、ここに手順が表示されます。' : cfg.needText));
+        btn.disabled = true; btn.textContent = 'AIを選んでください'; btn.className = 'act go';
+        return;
+      }
+      var svc = SERVICES[ai];
+      var plan = planLaunch(svc, text);
+      g.className = 'guide';
+      g.appendChild(el('b', 'title', '📋 ' + cfg.title(svc)));
+      var ol = el('ol');
+      var btnLabel = label(svc);
+      if (svc.manual) {
+        ol.appendChild(el('li', null, '下の「' + btnLabel + '」ボタンを押します（AIのタブは開きません）。'));
+        ol.appendChild(el('li', null, '普段お使いのAIをご自身で開き、入力欄に貼り付けて送信します' + PASTE_HOW + '。'));
+      } else {
+        ol.appendChild(el('li', null, '下の「' + btnLabel + '」ボタンを押します。' + cfg.what + 'は自動でコピーされ、' + svc.name + 'が新しいタブで開きます。'));
+        ol.appendChild(el('li', null, plan.auto
+          ? svc.name + 'の入力欄に、' + cfg.what + 'が自動で入ります。入らない場合だけ、貼り付けてください' + PASTE_HOW + '。送信します。'
+          : '入力欄をタップして、貼り付けてください' + PASTE_HOW + '。送信します。'));
+      }
+      cfg.steps(ai).forEach(function (t) { ol.appendChild(el('li', null, t)); });
+      g.appendChild(ol);
+      if (!svc.manual && !plan.auto) {
+        g.appendChild(el('p', 'reason', svc.autoFill ? '※' + cfg.what + 'が長いため、' + svc.name + 'には自動入力できません。貼り付けが必要です。'
+          : '※' + svc.name + 'は、サービス側の仕様でURLからの自動入力ができません。貼り付けが必要です。'));
+      }
+      btn.disabled = false;
+      btn.textContent = btnLabel;
+      btn.className = 'act go svc-' + svc.id;
+    }
+
+    function go() {
+      if (!ai) { toast('先に、AIを選んでください。', true); return; }
+      var text = cfg.text(ai);
+      if (!text) { toast(cfg.needText, true); return; }
+      var svc = SERVICES[ai];
+      var plan = planLaunch(svc, text);
+      var copying = copyText(text);          // クリック直後に同期でタブを開く（ポップアップブロック対策）
+      if (!svc.manual) { window.open(plan.url, '_blank', 'noopener'); }
+      copying.then(function (ok) {
+        if (!ok) { toast('自動コピーに失敗しました。もう一度お試しください。', true); }
+        else if (svc.manual) { toast('コピーしました！普段お使いのAIをご自身で開いて、入力欄に貼り付けてください。'); }
+        else { toast(svc.name + 'を開きました。開いたタブで、手順に沿って進めてください。'); }
+      });
+    }
+
+    return { renderChoices: renderChoices, render: render, go: go };
+  }
+
+  // ① そのまま記憶させる
+  var memLauncher = makeLauncher({
+    choices: 'memAiChoices', guide: 'memGuide', btn: 'btnMemGo',
+    what: '記憶させる依頼文', goSuffix: 'を開いて記憶させる ↗', manualLabel: '📋 記憶させる依頼文をコピーする',
+    needText: '先に、STEP 1の基本診断でプロフィールを作ってください。',
+    title: function (svc) { return svc.manual ? '普段使っているAIに記憶させる手順' : svc.name + 'に記憶させる手順'; },
+    text: function (ai) { return (profile && profile.lines.trim()) ? P.memoryPrompt(profile.lines.trim(), ai) : ''; },
+    steps: function (ai) {
+      return [
+        'AIが「記憶しました」などの返事をします。保存できない場合は、その旨が返ってきます。',
+        ai === 'gemini'
+          ? 'うまく記憶されない場合は、設定の「保存済みの情報（Saved info）」に、下の「設定欄に貼る用の短縮版」を貼り付けてください。'
+          : '記憶した内容は、AIの設定の「メモリ」「パーソナライズ」などで、確認・修正・削除できます（メニュー名はサービスやプランで変わります）。',
+        '記憶させたあとは、STEP 1の「毎回の相談文にも自動で添える」は、オフでも大丈夫です。'
+      ];
+    }
+  });
+
+  // ② 基本診断をAIに渡して、追加診断してもらう
+  var deepLauncher = makeLauncher({
+    choices: 'profAiChoices', guide: 'profAiGuide', btn: 'btnProfAiGo',
+    what: '診断の依頼文', goSuffix: 'を開いて診断してもらう ↗', manualLabel: '📋 診断の依頼文をコピーする',
+    needText: '',
+    title: function (svc) { return svc.manual ? '普段使っているAIに診断してもらう手順' : svc.name + 'に診断してもらう手順'; },
+    text: function (ai) {
+      var base = ($('profUseSite').checked && profile) ? profile.lines : '';
+      return P.interviewPrompt({ ai: ai, count: parseInt($('profCount').value, 10), base: base });
+    },
+    steps: function () {
+      return [
+        'AIが質問を始めます。1問ずつ答えてください（答えたくない質問は「パス」でOKです）。',
+        '最後にAIが「プロフィール案」を出します。違うところは、そのままAIに伝えて直してもらってください。',
+        '内容がよければ「OK」と返事します。AIが記憶に保存します（保存できない場合は、その旨が返ってきます）。',
+        '記憶機能を使わない・使えない場合は、プロフィール案をコピーして、下の欄に貼り付けてください。毎回の相談文に自動で添えられます。'
+      ];
+    }
+  });
+
+  function renderProfStep2() {
+    var show = !!profile || profSkip;
+    $('profStep2').hidden = !show;
+    if (!show) { return; }
+    if (!profile && profSkip) { profPath = 'deep'; }
+    $('pathMemoryBtn').disabled = !profile;
+    ['memory', 'deep'].forEach(function (k) {
+      var btn = $(k === 'memory' ? 'pathMemoryBtn' : 'pathDeepBtn');
+      var on = profPath === k;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      $(k === 'memory' ? 'pathMemory' : 'pathDeep').hidden = !on;
+    });
+    memLauncher.render();
+    deepLauncher.render();
+  }
+
+  function setProfPath(k) {
+    if (k === 'memory' && !profile) { return; }
+    profPath = k;
+    renderProfStep2();
+  }
+
+  function usePasted() {
+    var t = $('profPaste').value.trim();
+    if (!t) { toast('AIが作ったプロフィール案を貼り付けてください。', true); return; }
+    var cut = false;
+    if (t.length > 2000) { t = t.slice(0, 2000); cut = true; }
+    profile = { ans: P.emptyAns(), lines: t, attach: profile ? profile.attach !== false : true, t: Date.now(), source: 'ai' };
+    saveProfile();
+    renderProfile();
+    update();
+    toast(cut ? 'プロフィールとして使います（長いため、2,000文字までにしました）。' : 'プロフィールとして使います。毎回の相談文に自動で添えられます。');
+  }
+
   /* ---------- プライバシー設定 ---------- */
   function renderPrivacy() {
     var unset = privacy !== 'save' && privacy !== 'nosave';
@@ -486,17 +793,19 @@
     if (v === 'nosave') {
       var stored = getStoredHistory();
       var hasDraft = !!lsGet(LS_DRAFT);
-      if ((stored.length || hasDraft) &&
-          !confirm('この端末に保存されている履歴（' + stored.length + '件）と下書きを削除します。よろしいですか？')) {
+      var hasProf = !!lsGet(LS_PROF);
+      if ((stored.length || hasDraft || hasProf) &&
+          !confirm('この端末に保存されている履歴（' + stored.length + '件）・下書き' + (hasProf ? '・プロフィール' : '') + 'を削除します。よろしいですか？')) {
         renderPrivacy();
         return;
       }
-      lsRemove(LS_DRAFT); lsRemove(LS_HIST);
+      lsRemove(LS_DRAFT); lsRemove(LS_HIST); lsRemove(LS_PROF);
       privacy = 'nosave'; lsSet(LS_PRIV, 'nosave');
-      toast('「保存しない」にしました。この端末に残っていた履歴と下書きは削除しました。');
+      toast('「保存しない」にしました。この端末に残っていた履歴・下書き・プロフィールは削除しました（いま開いているページ内には残っています）。');
     } else {
       var carry = memHistory;
       privacy = 'save'; lsSet(LS_PRIV, 'save');
+      if (!profile) { loadProfile(); renderProfile(); syncProfileInputs(); paintProfileForm(); } else { saveProfile(); }
       if (!$('content').value.trim()) { applyState(lsGet(LS_DRAFT)); }
       if (carry.length) { lsSet(LS_HIST, carry.concat(getStoredHistory()).slice(0, HIST_MAX)); }
       memHistory = [];
@@ -506,30 +815,54 @@
   }
 
   function wipeAll() {
-    if (!confirm('入力中の内容と、この端末に保存された履歴・下書きをすべて消します。よろしいですか？')) { return; }
-    lsRemove(LS_DRAFT); lsRemove(LS_HIST); memHistory = [];
+    if (!confirm('入力中の内容と、この端末に保存された履歴・下書き・プロフィールをすべて消します。よろしいですか？')) { return; }
+    lsRemove(LS_DRAFT); lsRemove(LS_HIST); lsRemove(LS_PROF); memHistory = [];
+    profile = null; profSkip = false; profPath = null; resetProfileForm();
     $('content').value = ''; $('customName').value = '';
     A.CTX_FIELDS.forEach(function (f) { $('ctx_' + f.id).value = ''; });
     selected = ['auto']; mode = 'quick'; opts = Object.assign({}, A.MODES.quick.defaults);
     refreshOpts(); update();
     lsRemove(LS_DRAFT);
+    renderProfile();
     renderHistory();
-    toast('入力内容と履歴をすべて消しました。ChatGPT・Claude・Gemini側の会話も、必要に応じてそちらで削除・ログアウトしてください。');
+    toast('入力内容・履歴・プロフィールをすべて消しました。ChatGPT・Claude・Gemini側の会話も、必要に応じてそちらで削除・ログアウトしてください。');
   }
 
   /* ---------- 初期化 ---------- */
   function init() {
-    renderExamples(); renderCtx(); renderExperts(); renderModes(); renderOpts(); renderFollowups(); renderAiChoices();
+    renderExamples(); renderCtx(); renderExperts(); renderModes(); renderOpts(); renderFollowups(); renderAiChoices(); renderProfileForm(); memLauncher.renderChoices(); deepLauncher.renderChoices();
     refreshOpts();
     var p = lsGet(LS_PRIV);
     privacy = (p === 'save' || p === 'nosave') ? p : null;
-    if (canSave()) { applyState(lsGet(LS_DRAFT)); }
+    if (canSave()) { applyState(lsGet(LS_DRAFT)); loadProfile(); syncProfileInputs(); paintProfileForm(); }
+    renderProfile();
+    $('profileBox').open = !profile;
     renderPrivacy();
     update();
     renderHistory();
     $('btnPrivSave').addEventListener('click', function () { setPrivacy('save'); });
     $('btnPrivNoSave').addEventListener('click', function () { setPrivacy('nosave'); });
     $('noSave').addEventListener('change', function () { setPrivacy($('noSave').checked ? 'nosave' : 'save'); });
+    $('btnProfileMake').addEventListener('click', makeProfile);
+    $('btnProfSkip').addEventListener('click', function () {
+      profSkip = true; profPath = 'deep'; renderProfStep2();
+      toast('基本診断を飛ばして、AIだけで診断します。STEP 2の手順に進んでください。');
+    });
+    $('pathMemoryBtn').addEventListener('click', function () { setProfPath('memory'); });
+    $('pathDeepBtn').addEventListener('click', function () { setProfPath('deep'); });
+    $('btnMemGo').addEventListener('click', memLauncher.go);
+    $('btnMemShort').addEventListener('click', function () { copyProfile('short'); });
+    $('profCount').addEventListener('change', deepLauncher.render);
+    $('profUseSite').addEventListener('change', deepLauncher.render);
+    $('btnProfAiGo').addEventListener('click', deepLauncher.go);
+    $('btnProfPaste').addEventListener('click', usePasted);
+    $('btnProfDelete').addEventListener('click', deleteProfile);
+    $('profAttach').addEventListener('change', function () {
+      if (profile) { profile.attach = $('profAttach').checked; saveProfile(); update(); }
+    });
+    $('profileText').addEventListener('input', function () {
+      if (profile) { profile.lines = $('profileText').value; saveProfile(); update(); renderProfStep2(); }
+    });
     $('btnWipe').addEventListener('click', wipeAll);
     $('btnWipe2').addEventListener('click', wipeAll);
 

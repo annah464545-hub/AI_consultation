@@ -147,4 +147,46 @@ button.go.svc-other { background: var(--muted); }
 
 /* ---- バージョン表示（古いCSSが残っていないか確認用） ---- */
 .ver { font-size: 0.7rem; }
-.ver-css::after { content: 'v10'; }
+.ver-css::after { content: 'v13'; }
+
+/* ---- プロフィール ---- */
+.profile { border: 2px solid var(--accent); background: var(--accent-bg); }
+.profile .warn-note { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; color: var(--text); }
+.pq { border: none; padding: 0; margin: 14px 0 0; }
+.pq legend { font-weight: bold; font-size: 0.9rem; padding: 0; margin-bottom: 6px; }
+.pq legend small { font-weight: normal; color: var(--sub); }
+.pq-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pq-btn { padding: 9px 6px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; font: inherit; font-size: 0.82rem; }
+.pq-btn:hover { border-color: var(--accent); }
+.pq-btn.active { border-color: var(--accent); background: var(--accent-bg); font-weight: bold; box-shadow: inset 0 0 0 1px var(--accent); }
+.pq-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.pq-chips .pq-btn { padding: 6px 12px; border-radius: 999px; }
+.pq input[type="text"] { padding: 10px; font-size: 0.92rem; }
+#btnProfileMake { width: 100%; margin-top: 18px; }
+.profile .actions { margin-top: 10px; }
+ol.how { font-size: 0.82rem; padding-left: 20px; margin: 10px 0 4px; }
+ol.how li { margin-bottom: 6px; }
+@media (max-width: 520px) { .pq-row { grid-template-columns: 1fr; } }
+
+/* ---- プロフィールの作り方タブ ---- */
+.prof-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.ptab { padding: 10px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); cursor: pointer; font: inherit; font-weight: bold; font-size: 0.88rem; text-align: center; }
+.ptab small { display: block; font-weight: normal; font-size: 0.72rem; color: var(--sub); }
+.ptab.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.label.sm { font-size: 0.88rem; margin: 14px 0 6px; }
+.pushdown { margin-top: 30px; }
+#btnProfAiGo { width: 100%; margin-top: 10px; }
+#btnProfPaste { width: 100%; margin-top: 8px; }
+@media (max-width: 520px) { .prof-tabs { grid-template-columns: 1fr; } .pushdown { margin-top: 10px; } }
+
+/* ---- 2ステップ（基本診断 → 活用方法の選択） ---- */
+.step-h { margin: 20px 0 6px; padding: 6px 10px; border-left: 5px solid var(--accent); background: var(--card); font-weight: bold; font-size: 0.92rem; border-radius: 4px; }
+.path-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.path-btn { padding: 12px; border: 3px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); cursor: pointer; text-align: left; font: inherit; }
+.path-btn:hover:not(:disabled) { border-color: var(--accent); }
+.path-btn.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-bg); }
+.path-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.path-title { display: block; font-weight: bold; font-size: 0.98rem; }
+.path-sub { display: block; font-size: 0.76rem; color: var(--sub); margin-top: 3px; }
+#btnMemGo { width: 100%; margin-top: 10px; }
+@media (max-width: 520px) { .path-choices { grid-template-columns: 1fr; } }

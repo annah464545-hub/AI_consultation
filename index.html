@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>AI専門家相談室</title>
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
   <main class="container">
@@ -38,6 +38,74 @@
 
       <p class="priv-warn">⚠️ <b>ネットカフェ・職場や家族と共用のパソコンなどでは、「保存しない」をオンにするか、使い終わったら必ず「すべて消す」を押してください。</b>消さないと、次に使う人に相談内容が見えてしまいます。また、ChatGPT・Claude・Geminiの側にも会話が残るため、そちらもログアウトや会話の削除をお忘れなく。</p>
     </section>
+
+    <!-- あなたについて（プロフィール） -->
+    <details id="profileBox" class="profile" open>
+      <summary>🧑 あなたについて教えてください <span class="state" id="profileState"></span></summary>
+      <p class="note">AIがあなたの考え方や好みを知っていると、言い方が合わずに遠回りしたり、気分を害したりすることが減ります。これは<b>診断ではなく</b>、あなた自身の自己申告をまとめたメモです。答えたくない質問は、飛ばして構いません（約3分）。</p>
+      <p class="note warn-note">🔐 実名・勤務先・病名・住所など、個人が特定できる情報は書かないでください。AIの「記憶」に保存すると、<b>そのAIのアカウント側に残ります</b>。共用のアカウントや端末では、記憶させないでください。</p>
+      <div class="step-h">STEP 1　基本診断（このサイトの質問・約3分）</div>
+      <div id="profileForm"></div>
+      <button type="button" class="act primary" id="btnProfileMake">✨ プロフィールを作る</button>
+      <button type="button" class="link" id="btnProfSkip">基本診断を飛ばして、AIだけで診断してもらう →</button>
+
+      <div id="profileResult" hidden>
+        <h3 class="sub">できあがった基本プロフィール（直接編集できます）</h3>
+        <textarea id="profileText" class="preview" aria-label="できあがったプロフィール"></textarea>
+        <label class="check" for="profAttach"><input type="checkbox" id="profAttach"> <span>毎回の相談文にも、このプロフィールを自動で添える<br><small>AIに記憶させない人はオン推奨。記憶させた人はオフでも大丈夫です。</small></span></label>
+        <button type="button" class="link" id="btnProfDelete">プロフィールを削除する</button>
+      </div>
+
+      <div id="profStep2" hidden>
+        <div class="step-h">STEP 2　どこまで自分に合わせますか？</div>
+        <div class="path-choices" role="group" aria-label="プロフィールの活用方法">
+          <button type="button" class="path-btn" id="pathMemoryBtn" aria-pressed="false">
+            <span class="path-title">① これで十分</span>
+            <span class="path-sub">基本診断の結果を、そのままAIに記憶させます<br>所要：約1分</span>
+          </button>
+          <button type="button" class="path-btn" id="pathDeepBtn" aria-pressed="false">
+            <span class="path-title">② もっと自分に合わせたい</span>
+            <span class="path-sub">基本診断の結果をAIに渡し、AIが追加で質問。その結果をAIが記憶します<br>所要：約5〜10分</span>
+          </button>
+        </div>
+
+        <!-- ① そのまま記憶させる -->
+        <div id="pathMemory" hidden>
+          <div class="label sm" id="memAiLabel">どのAIに記憶させますか？</div>
+          <div class="ai-choices" id="memAiChoices" role="group" aria-labelledby="memAiLabel"></div>
+          <div class="guide" id="memGuide" aria-live="polite"></div>
+          <button type="button" class="act go" id="btnMemGo" disabled>AIを選んでください</button>
+          <button type="button" class="link" id="btnMemShort">設定欄に貼る用の短縮版をコピーする（Geminiの「保存済みの情報」など）</button>
+        </div>
+
+        <!-- ② AIで追加診断 -->
+        <div id="pathDeep" hidden>
+          <p class="note">基本診断の結果をAIに渡したうえで、<b>AIがあなたにインタビュー</b>します。質問の内容や順番はAI自身が決めるので、AIごとの聞き方の違いが出ます。基本診断より、あなたの答えに合わせて深掘りしてくれるのが利点です。</p>
+          <p class="note warn-note">⚠️ AIの「診断」は、医学的・心理学的な検査ではありません。AIは褒めすぎたり、誰にでも当てはまることを言ったりすることがあるので、できあがったプロフィール案は、<b>自分で読んで、違うところは直してもらってください。</b></p>
+          <div class="label sm" id="profAiLabel">どのAIに診断してもらいますか？</div>
+          <div class="ai-choices" id="profAiChoices" role="group" aria-labelledby="profAiLabel"></div>
+          <div class="row">
+            <div>
+              <label for="profCount">質問の数</label>
+              <select id="profCount">
+                <option value="8" selected>約8問（手軽）</option>
+                <option value="15">約15問（じっくり）</option>
+              </select>
+            </div>
+            <div>
+              <label class="check pushdown" for="profUseSite"><input type="checkbox" id="profUseSite" checked> <span>基本プロフィールを土台にする<br><small>重複する質問を避けてもらいます</small></span></label>
+            </div>
+          </div>
+          <div class="guide" id="profAiGuide" aria-live="polite"></div>
+          <button type="button" class="act go" id="btnProfAiGo" disabled>AIを選んでください</button>
+
+          <h3 class="sub">AIが作ったプロフィール案を、ここに貼り付ける（任意）</h3>
+          <p class="note">AIの記憶機能を使わない人や、他のAIでも使いたい人は、AIが出した「プロフィール案」をコピーして、ここに貼り付けてください。上のプロフィールが置き換わり、毎回の相談文に自動で添えられるようになります。</p>
+          <textarea id="profPaste" aria-label="AIが作ったプロフィール案を貼り付け" placeholder="- 結論を先に伝えてほしい&#10;- やわらかい言い方がよい…"></textarea>
+          <button type="button" class="act copy" id="btnProfPaste">このプロフィールを使う</button>
+        </div>
+      </div>
+    </details>
 
     <details class="howto">
       <summary>💡 なぜこのサイトを通すと答えが良くなるの？（30秒）</summary>
@@ -136,14 +204,15 @@
     </details>
 
     <div class="footer">
-      <p class="ver">バージョン確認：ページ v10 ／ プログラム <span id="verJs">（未読込）</span> ／ デザイン <span class="ver-css"></span>　※3つとも v10 なら最新です。違う場合は、画面を強制再読み込み（Ctrl + Shift + R、スマホはタブを閉じて開き直す）してください。</p>
+      <p class="ver">バージョン確認：ページ v13 ／ プログラム <span id="verJs">（未読込）</span> ／ デザイン <span class="ver-css"></span>　※3つとも v13 なら最新です。違う場合は、画面を強制再読み込み（Ctrl + Shift + R、スマホはタブを閉じて開き直す）してください。</p>
       <p>🔒 入力内容・履歴は、この端末のこのブラウザ内にのみ保存されます（保存しない設定も選べます）。当サイトは内容を収集・送信しません。ボタンを押したときだけ、選んだAIサービスへ渡されます。共用の端末では、使い終わったら必ず履歴を消してください。</p>
       <p>⚠️ AIの回答は間違いを含むことがあります。医療・法律・お金などの重要な判断は、出典を確認し、必要に応じて専門機関にご相談ください。</p>
       <p>💬 つらい気持ちが強いときは、一人で抱えず専門の相談窓口へ（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。</p>
     </div>
   </main>
 
-  <script src="js/prompt.js?v=10"></script>
-  <script src="js/app.js?v=10"></script>
+  <script src="js/prompt.js?v=13"></script>
+  <script src="js/profile.js?v=13"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>
