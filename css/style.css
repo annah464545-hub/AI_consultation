@@ -149,7 +149,7 @@ button.go.svc-other { background: var(--muted); }
 
 /* ---- バージョン表示（古いCSSが残っていないか確認用） ---- */
 .ver { font-size: 0.7rem; }
-.ver-css::after { content: 'v16'; }
+.ver-css::after { content: 'v18'; }
 
 /* ---- プロフィール ---- */
 .profile { border: 2px solid var(--accent); background: var(--accent-bg); }
@@ -192,3 +192,7 @@ ol.how li { margin-bottom: 6px; }
 .path-sub { display: block; font-size: 0.76rem; color: var(--sub); margin-top: 3px; }
 #btnMemGo { width: 100%; margin-top: 10px; }
 @media (max-width: 520px) { .path-choices { grid-template-columns: 1fr; } }
+
+/* ---- スマホ：開き方の切り替え ---- */
+.chip.active { border-color: var(--accent); background: var(--accent-bg); font-weight: bold; }
+.guide .chips { margin: 6px 0 4px; align-items: center; }

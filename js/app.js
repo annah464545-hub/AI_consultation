@@ -3,7 +3,7 @@
 
   var A = window.AIC;
   var P = window.AICP;
-  var APP_VERSION = 'v16';
+  var APP_VERSION = 'v18';
   var URL_LIMIT = 7500;      // ?q= 方式で安全に送れる、エンコード後の長さの目安（超えるとサーバー側でエラーになることがある）
   var HASH_LIMIT = 100000;   // #?q= 方式（サーバーに送られない部分に入れる）の上限
   var HIST_MAX = 10;
@@ -263,7 +263,7 @@
     if (typeof s.custom === 'string') { $('customName').value = s.custom.slice(0, 30); }
     if (A.MODES[s.mode]) { mode = s.mode; }
     if (s.opts && typeof s.opts === 'object') {
-      A.OPTS.forEach(function (op) { opts[op.id] = !!s.opts[op.id]; });
+      A.OPTS.forEach(function (op) { opts[op.id] = (op.id in s.opts) ? !!s.opts[op.id] : !!A.MODES[mode].defaults[op.id]; });
     } else { opts = Object.assign({}, A.MODES[mode].defaults); }
     setSelectValue($('stance'), s.stance);
     setSelectValue($('length'), s.length);
@@ -325,10 +325,13 @@
   // chatgpt・claude: URLでの自動入力に対応（claudeは長い文章だと使えない） / gemini: 非対応 / other: 自分でAIを開いて貼り付ける（タブは開かない）
   var SERVICES = {
     chatgpt: { id: 'chatgpt', name: 'ChatGPT', base: 'https://chatgpt.com/', param: '?q=', hashParam: '#?q=', autoFill: true,
+               pkg: 'com.openai.chatgpt', hostPath: 'chatgpt.com/',
                sub: '相談文が自動で入力されます' },
     claude:  { id: 'claude', name: 'Claude', base: 'https://claude.ai/new', param: '?q=', hashParam: null, autoFill: true,
+               pkg: 'com.anthropic.claude', hostPath: 'claude.ai/new',
                sub: '自動で入力されます（長い場合は貼り付け）' },
     gemini:  { id: 'gemini', name: 'Gemini', base: 'https://gemini.google.com/app', param: null, hashParam: null, autoFill: false,
+               pkg: 'com.google.android.apps.bard', hostPath: 'gemini.google.com/app',
                sub: '貼り付けが必要です' },
     other:   { id: 'other', name: 'その他のAI', base: '', param: null, hashParam: null, autoFill: false, manual: true,
                sub: '普段使っているAIで使う（コピーして、自分で開いて貼り付け）' }
@@ -336,8 +339,23 @@
   var aiChoice = null;      // 選択中のAI（まだ選んでいなければ null）
 
   // どのURLで開くか、相談文が自動入力されるかを決める
+  function isAndroid() { return /Android/i.test((typeof navigator !== 'undefined' && navigator.userAgent) || ''); }
+  function isMobile() { return /Android|iPhone|iPad|iPod/i.test((typeof navigator !== 'undefined' && navigator.userAgent) || ''); }
+  var mobileOpen = 'app';   // スマホでの開き方：'app'（アプリ。貼り付けが必要）／'browser'（ブラウザ。自動入力・要ログイン）
+  var APP_REASON = '※スマホのアプリには、相談文を自動で入れる方法がないため、貼り付けが必要です。ブラウザ版で使う場合は、上の「ブラウザで開く」を選んでください。';
+
+  // Androidでアプリを直接開くためのアドレス（アプリが無い場合は、ブラウザのアドレスに切り替わる）
+  function buildIntent(svc) {
+    return 'intent://' + svc.hostPath + '#Intent;scheme=https;package=' + svc.pkg +
+      ';S.browser_fallback_url=' + encodeURIComponent(svc.base) + ';end';
+  }
+
   function planLaunch(svc, prompt) {
     if (svc.manual) { return { url: null, auto: false }; }
+    if (isMobile() && mobileOpen === 'app') {
+      // アプリで開く：URLに相談文は入れない（アプリには自動入力の方法がないため。ブラウザが勝手に開くのも防ぐ）
+      return { url: svc.base, auto: false, app: true, intent: (isAndroid() && svc.pkg) ? buildIntent(svc) : null };
+    }
     var url = svc.base, auto = false;
     var enc = encodeURIComponent(prompt);
     if (svc.param && enc.length <= URL_LIMIT) {
@@ -346,6 +364,39 @@
       url = svc.base + svc.hashParam + enc; auto = svc.autoFill;   // 長い文章は、サーバーに送られない # 側に入れる
     }
     return { url: url, auto: auto };
+  }
+
+  function openPlan(plan) {
+    if (!plan.url) { return; }
+    if (plan.app && plan.intent) { window.location.href = plan.intent; return; }
+    window.open(plan.url, '_blank', 'noopener');
+  }
+
+  // コピー → AIを開く。ブラウザで開くときは、ポップアップブロック対策としてクリック直後に開く。
+  // アプリで開くときは、コピーが終わってから開く（アプリに切り替わる前に、確実にコピーを完了させるため）。
+  function openAfter(plan, copying, done) {
+    if (plan.app) { copying.then(function (ok) { openPlan(plan); done(ok); }); }
+    else { openPlan(plan); copying.then(done); }
+  }
+
+  // スマホのときだけ表示する、「アプリで開く／ブラウザで開く」の切り替え
+  function appendMobileToggle(g, svc) {
+    if (!isMobile() || svc.manual) { return; }
+    var row = el('div', 'chips');
+    row.appendChild(el('span', 'note', '開き方：'));
+    [['app', '📱 アプリで開く（貼り付けが必要）'], ['browser', '🌐 ブラウザで開く（自動入力・要ログイン）']].forEach(function (o) {
+      var b = el('button', 'chip' + (mobileOpen === o[0] ? ' active' : ''), o[1]);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', mobileOpen === o[0] ? 'true' : 'false');
+      b.addEventListener('click', function () { mobileOpen = o[0]; rerenderLaunchers(); });
+      row.appendChild(b);
+    });
+    g.appendChild(row);
+  }
+  function rerenderLaunchers() {
+    renderLaunch();
+    if (typeof memLauncher !== 'undefined') { memLauncher.render(); }
+    if (typeof deepLauncher !== 'undefined') { deepLauncher.render(); }
   }
 
   function renderAiChoices() {
@@ -382,12 +433,16 @@
     var plan = planLaunch(svc, $('preview').value.trim());
     g.className = 'guide';
     g.appendChild(el('b', 'title', '📋 ' + (svc.manual ? '普段使っているAIで相談する手順' : svc.name + 'に相談する手順')));
+    appendMobileToggle(g, svc);
     var ol = el('ol');
     var pasteHow = '（Ctrl/⌘ + V、スマホは長押し→ペースト）';
     if (svc.manual) {
       ol.appendChild(el('li', null, '下の「プロンプトをコピーする」ボタンを押します。相談文がコピーされます（AIのタブは開きません）。'));
       ol.appendChild(el('li', null, '普段お使いのAI（アプリやサイト）を、ご自身で開きます。'));
       ol.appendChild(el('li', null, '入力欄をタップして、コピーした相談文を貼り付けます' + pasteHow + '。'));
+    } else if (plan.app) {
+      ol.appendChild(el('li', null, '下の「' + svc.name + 'を開いて相談する」ボタンを押します。相談文は自動でコピーされ、' + svc.name + 'アプリが開きます（アプリが入っていない場合は、ブラウザで開きます）。'));
+      ol.appendChild(el('li', null, 'アプリの入力欄を長押しして「貼り付け（ペースト）」を選びます。'));
     } else {
       ol.appendChild(el('li', null, '下の「' + svc.name + 'を開いて相談する」ボタンを押します。相談文は自動でコピーされ、' + svc.name + 'が新しいタブで開きます。'));
       if (plan.auto) {
@@ -399,7 +454,9 @@
     ol.appendChild(el('li', null, '内容を確認して、送信します。'));
     ol.appendChild(el('li', null, 'AIの返事が来たあとの会話は、そのAIの画面の中で続けてください（このサイトに返事は表示されません）。新しく別の相談をしたいときは、このサイトにもう一度来て、相談内容を入力してください。'));
     g.appendChild(ol);
-    if (!plan.auto && !svc.manual) {
+    if (plan.app) {
+      g.appendChild(el('p', 'reason', APP_REASON));
+    } else if (!plan.auto && !svc.manual) {
       g.appendChild(el('p', 'reason', svc.autoFill
         ? '※相談文が長いため、' + svc.name + 'には自動入力できません。貼り付けが必要です。'
         : '※' + svc.name + 'は、サービス側の仕様でURLからの自動入力ができません。貼り付けが必要です。'));
@@ -444,10 +501,10 @@
     var svc = SERVICES[aiChoice];
     if (svc.manual) { copyOnly(); return; }
     var plan = planLaunch(svc, prompt);
-    var copying = copyText(prompt);        // 失敗時の保険として、必ずコピーもする。クリック直後に同期でタブを開く（ポップアップブロック対策）
-    window.open(plan.url, '_blank', 'noopener');
-    copying.then(function (ok) {
+    var copying = copyText(prompt);        // 失敗時の保険として、必ずコピーもする
+    openAfter(plan, copying, function (ok) {
       if (!ok) { $('previewBox').open = true; toast('自動コピーに失敗しました。プロンプト欄から手動でコピーしてください。', true); }
+      else if (plan.app) { toast(svc.name + 'アプリを開きます。入力欄に貼り付けて送信してください。'); }
       else { toast(svc.name + 'を開きました。開いたタブで、手順に沿って進めてください。'); }
     });
     saveHistory();
@@ -655,11 +712,15 @@
       var plan = planLaunch(svc, text);
       g.className = 'guide';
       g.appendChild(el('b', 'title', '📋 ' + cfg.title(svc)));
+      appendMobileToggle(g, svc);
       var ol = el('ol');
       var btnLabel = label(svc);
       if (svc.manual) {
         ol.appendChild(el('li', null, '下の「' + btnLabel + '」ボタンを押します（AIのタブは開きません）。'));
         ol.appendChild(el('li', null, '普段お使いのAIをご自身で開き、入力欄に貼り付けて送信します' + PASTE_HOW + '。'));
+      } else if (plan.app) {
+        ol.appendChild(el('li', null, '下の「' + btnLabel + '」ボタンを押します。' + cfg.what + 'は自動でコピーされ、' + svc.name + 'アプリが開きます（アプリが入っていない場合は、ブラウザで開きます）。'));
+        ol.appendChild(el('li', null, 'アプリの入力欄を長押しして「貼り付け（ペースト）」を選び、送信します。'));
       } else {
         ol.appendChild(el('li', null, '下の「' + btnLabel + '」ボタンを押します。' + cfg.what + 'は自動でコピーされ、' + svc.name + 'が新しいタブで開きます。'));
         ol.appendChild(el('li', null, plan.auto
@@ -668,7 +729,9 @@
       }
       cfg.steps(ai).forEach(function (t) { ol.appendChild(el('li', null, t)); });
       g.appendChild(ol);
-      if (!svc.manual && !plan.auto) {
+      if (plan.app) {
+        g.appendChild(el('p', 'reason', APP_REASON));
+      } else if (!svc.manual && !plan.auto) {
         g.appendChild(el('p', 'reason', svc.autoFill ? '※' + cfg.what + 'が長いため、' + svc.name + 'には自動入力できません。貼り付けが必要です。'
           : '※' + svc.name + 'は、サービス側の仕様でURLからの自動入力ができません。貼り付けが必要です。'));
       }
@@ -683,13 +746,14 @@
       if (!text) { toast(cfg.needText, true); return; }
       var svc = SERVICES[ai];
       var plan = planLaunch(svc, text);
-      var copying = copyText(text);          // クリック直後に同期でタブを開く（ポップアップブロック対策）
-      if (!svc.manual) { window.open(plan.url, '_blank', 'noopener'); }
-      copying.then(function (ok) {
+      var copying = copyText(text);
+      function done(ok) {
         if (!ok) { toast('自動コピーに失敗しました。もう一度お試しください。', true); }
         else if (svc.manual) { toast('コピーしました！普段お使いのAIをご自身で開いて、入力欄に貼り付けてください。'); }
+        else if (plan.app) { toast(svc.name + 'アプリを開きます。入力欄に貼り付けて送信してください。'); }
         else { toast(svc.name + 'を開きました。開いたタブで、手順に沿って進めてください。'); }
-      });
+      }
+      if (svc.manual) { copying.then(done); } else { openAfter(plan, copying, done); }
     }
 
     return { renderChoices: renderChoices, render: render, go: go };
