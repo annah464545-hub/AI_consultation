@@ -3,7 +3,7 @@
 
   var A = window.AIC;
   var P = window.AICP;
-  var APP_VERSION = 'v18';
+  var APP_VERSION = 'v19';
   var URL_LIMIT = 7500;      // ?q= 方式で安全に送れる、エンコード後の長さの目安（超えるとサーバー側でエラーになることがある）
   var HASH_LIMIT = 100000;   // #?q= 方式（サーバーに送られない部分に入れる）の上限
   var HIST_MAX = 10;
@@ -211,7 +211,7 @@
     }
     var n = A.ctxCount(s.ctx);
     $('ctxState').textContent = n ? '（' + n + '項目入力済み）' : '（任意・書くほど答えが具体的になります）';
-    $('safety').hidden = !/死にたい|自殺|消えたい|いなくなりたい|自傷|リスカ|生きて(い)?たくない/.test($('content').value);
+    $('safety').hidden = !/死にたい|死にたく|死のう|死んでしまいたい|死ぬしか|自殺|消えたい|いなくなりたい|自傷|リスカ|オーバードーズ|生きて(い)?たくない|生きていけない|生きる意味がない|終わりにしたい/.test($('content').value);
   }
 
   function renderExplain(s) {

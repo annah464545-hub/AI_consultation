@@ -149,7 +149,7 @@ button.go.svc-other { background: var(--muted); }
 
 /* ---- バージョン表示（古いCSSが残っていないか確認用） ---- */
 .ver { font-size: 0.7rem; }
-.ver-css::after { content: 'v18'; }
+.ver-css::after { content: 'v19'; }
 
 /* ---- プロフィール ---- */
 .profile { border: 2px solid var(--accent); background: var(--accent-bg); }
@@ -196,3 +196,8 @@ ol.how li { margin-bottom: 6px; }
 /* ---- スマホ：開き方の切り替え ---- */
 .chip.active { border-color: var(--accent); background: var(--accent-bg); font-weight: bold; }
 .guide .chips { margin: 6px 0 4px; align-items: center; }
+
+/* ---- つらい気持ちへの案内 ---- */
+.safety p { margin: 6px 0; }
+.safety ul { margin: 6px 0 6px 20px; padding: 0; }
+.safety li { margin-bottom: 2px; }

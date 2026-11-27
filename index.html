@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light dark">
   <meta name="description" content="いつものAIを、頼れるアドバイザーに！あなたの悩みに合わせた相談文（プロンプト）を作ります。回答は、いつものAIが行います。利用料無料・登録不要。">
   <title>AI専門家相談室</title>
-  <link rel="stylesheet" href="css/style.css?v=18">
+  <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
   <main class="container">
@@ -125,7 +125,16 @@
     <textarea id="content" placeholder="例：最近仕事が忙しくて余裕がなく、人間関係でも少し疲れています..."></textarea>
     <div class="chips" id="exampleChips" aria-label="入力例"></div>
     <div class="safety" id="safety" hidden>
-      💬 とてもつらい気持ちが書かれているようです。AIに相談するだけでなく、身近な人や専門の相談窓口にも話してみてください（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。
+      <p><b>💬 つらい気持ちを、ここに書いてくださって、ありがとうございます。</b></p>
+      <p>作られる相談文は、AIが<b>まずあなたの気持ちを受け止めて、話を聞く</b>形になっています。このまま送って大丈夫です。</p>
+      <p>もし、その気持ちが頭から離れないときは、話を聞いてくれる人たちもいます。AIと話しながら、こうした窓口にも話してみるのも、一つの方法です。</p>
+      <ul>
+        <li>よりそいホットライン　0120-279-338（24時間・無料）</li>
+        <li>#いのちSOS　0120-061-338（無料）</li>
+        <li>いのちの電話　0120-783-556（毎日16〜21時・無料）</li>
+      </ul>
+      <p>今すぐ危険が迫っているときは、迷わず<b>119（救急）</b>か<b>110（警察）</b>に連絡してください。</p>
+      <p class="note">※番号や受付時間は、変わることがあります。</p>
     </div>
 
     <details id="ctxBox" class="ctx">
@@ -207,16 +216,16 @@
     </details>
 
     <div class="footer">
-      <p class="ver">バージョン確認：ページ v18 ／ プログラム <span id="verJs">（未読込）</span> ／ デザイン <span class="ver-css"></span>　※3つとも v18 なら最新です。違う場合は、画面を強制再読み込み（Ctrl + Shift + R、スマホはタブを閉じて開き直す）してください。</p>
+      <p class="ver">バージョン確認：ページ v19 ／ プログラム <span id="verJs">（未読込）</span> ／ デザイン <span class="ver-css"></span>　※3つとも v19 なら最新です。違う場合は、画面を強制再読み込み（Ctrl + Shift + R、スマホはタブを閉じて開き直す）してください。</p>
       <p>© 2026 AI専門家相談室 All rights reserved. 本サイトの内容（文章・デザイン・プログラム等）の無断転載・再配布を禁じます。</p>
       <p>🔒 入力内容・履歴は、この端末のこのブラウザ内にのみ保存されます（保存しない設定も選べます）。当サイトは内容を収集・送信しません。ボタンを押したときだけ、選んだAIサービスへ渡されます。共用の端末では、使い終わったら必ず履歴を消してください。</p>
       <p>⚠️ AIの回答は間違いを含むことがあります。医療・法律・お金などの重要な判断は、出典を確認し、必要に応じて専門機関にご相談ください。</p>
-      <p>💬 つらい気持ちが強いときは、一人で抱えず専門の相談窓口へ（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。</p>
+      <p>💬 つらい気持ちが続くときは、話を聞いてくれる窓口もあります（例：よりそいホットライン 0120-279-338／#いのちSOS 0120-061-338。番号は変更される場合があります）。</p>
     </div>
   </main>
 
-  <script src="js/prompt.js?v=18"></script>
-  <script src="js/profile.js?v=18"></script>
-  <script src="js/app.js?v=18"></script>
+  <script src="js/prompt.js?v=19"></script>
+  <script src="js/profile.js?v=19"></script>
+  <script src="js/app.js?v=19"></script>
 </body>
 </html>
