@@ -3,7 +3,7 @@
 
   var A = window.AIC;
   var P = window.AICP;
-  var APP_VERSION = 'v20';
+  var APP_VERSION = 'v22';
   var URL_LIMIT = 7500;      // ?q= 方式で安全に送れる、エンコード後の長さの目安（超えるとサーバー側でエラーになることがある）
   var HASH_LIMIT = 100000;   // #?q= 方式（サーバーに送られない部分に入れる）の上限
   var HIST_MAX = 10;
@@ -797,8 +797,13 @@
     }
   });
 
+  function scrollToEl(e) { if (e && e.scrollIntoView) { e.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
+
   function renderProfStep2() {
     $('btnProfSkip').hidden = !!profile || profSkip;   // 基本診断を終えた／飛ばすと決めたあとは、リンクを隠す
+    $('profStep1Body').hidden = profSkip;              // 飛ばすと決めたら、STEP 1の質問を畳む
+    $('profSkipNote').hidden = !profSkip;
+    $('profUseSiteLabel').hidden = !profile;           // 基本プロフィールが無いときは「土台にする」を隠す
     var show = !!profile || profSkip;
     $('profStep2').hidden = !show;
     if (!show) { return; }
@@ -911,7 +916,14 @@
     $('btnProfileMake').addEventListener('click', makeProfile);
     $('btnProfSkip').addEventListener('click', function () {
       profSkip = true; profPath = 'deep'; renderProfStep2();
-      toast('基本診断を飛ばして、AIだけで診断します。STEP 2の手順に進んでください。');
+      scrollToEl($('profStep2'));   // STEP 2へ移動する（STEP 1の質問は畳まれる）
+      toast('基本診断は飛ばしました。STEP 2で、AIを選んでください。');
+    });
+    $('btnProfBack').addEventListener('click', function () {
+      profSkip = false;
+      if (!profile) { profPath = null; }
+      renderProfStep2();
+      scrollToEl($('profStep1Body'));
     });
     $('pathMemoryBtn').addEventListener('click', function () { setProfPath('memory'); });
     $('pathDeepBtn').addEventListener('click', function () { setProfPath('deep'); });

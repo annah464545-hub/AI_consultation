@@ -149,7 +149,7 @@ button.go.svc-other { background: var(--muted); }
 
 /* ---- バージョン表示（古いCSSが残っていないか確認用） ---- */
 .ver { font-size: 0.7rem; }
-.ver-css::after { content: 'v20'; }
+.ver-css::after { content: 'v22'; }
 
 /* ---- プロフィール ---- */
 .profile { border: 2px solid var(--accent); background: var(--accent-bg); }
@@ -203,3 +203,5 @@ ol.how li { margin-bottom: 6px; }
 .safety li { margin-bottom: 2px; }
 
 .link.skip { display: block; margin: 4px 0 8px; font-size: 0.85rem; }
+
+.skip-note { margin: 12px 0 0; padding: 10px 12px; border: 1px dashed var(--accent); border-radius: 10px; font-size: 0.88rem; }
