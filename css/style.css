@@ -149,7 +149,7 @@ button.go.svc-other { background: var(--muted); }
 
 /* ---- バージョン表示（古いCSSが残っていないか確認用） ---- */
 .ver { font-size: 0.7rem; }
-.ver-css::after { content: 'v22'; }
+.ver-css::after { content: 'v23'; }
 
 /* ---- プロフィール ---- */
 .profile { border: 2px solid var(--accent); background: var(--accent-bg); }
