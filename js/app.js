@@ -3,7 +3,7 @@
 
   var A = window.AIC;
   var P = window.AICP;
-  var APP_VERSION = 'v19';
+  var APP_VERSION = 'v20';
   var URL_LIMIT = 7500;      // ?q= 方式で安全に送れる、エンコード後の長さの目安（超えるとサーバー側でエラーになることがある）
   var HASH_LIMIT = 100000;   // #?q= 方式（サーバーに送られない部分に入れる）の上限
   var HIST_MAX = 10;
@@ -798,6 +798,7 @@
   });
 
   function renderProfStep2() {
+    $('btnProfSkip').hidden = !!profile || profSkip;   // 基本診断を終えた／飛ばすと決めたあとは、リンクを隠す
     var show = !!profile || profSkip;
     $('profStep2').hidden = !show;
     if (!show) { return; }
